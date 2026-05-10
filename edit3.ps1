@@ -1,0 +1,3 @@
+$content = Get-Content app.py -Raw
+$content = $content -replace '        if request.form[''email''] == "sanchezkike133@gmail.com" and request.form[''password''] == "1234":`r`n            return redirect(url_for(''dashboard''))', '        email = request.form[''email'']`r`n        password = request.form[''password'']`r`n        user = User.query.filter_by(email=email).first()`r`n        if user and check_password_hash(user.password, password):`r`n            login_user(user)`r`n            return redirect(url_for(''dashboard''))'
+$content | Set-Content app.py

@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<style>
+.events-container{
+    padding:40px;
+    background:#f5f5f5;
+    min-height:100vh;
+}
+
+.top-section{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
+
+.page-title{
+    font-size:30px;
+    font-weight:bold;
+    color:#111;
+}
+
+.add-btn{
+    background:#008000;
+    color:white;
+    padding:14px 24px;
+    border:none;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+    text-decoration:none;
+}
+
+.table-card{
+    background:white;
+    border-radius:20px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+}
+
+thead{
+    background:#f1f1f1;
+}
+
+th{
+    text-align:left;
+    padding:18px;
+    font-size:15px;
+    font-weight:bold;
+}
+
+td{
+    padding:18px;
+    border-top:1px solid #eee;
+    font-size:14px;
+}
+
+.action-btn{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    font-weight:bold;
+    margin-left:8px;
+}
+
+.edit-btn{
+    background:#f4d35e;
+}
+
+.delete-btn{
+    background:#ff4d4d;
+    color:white;
+}
+
+.form-box{
+    background:white;
+    padding:30px;
+    border-radius:20px;
+    margin-top:30px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+.form-box h2{
+    margin-bottom:20px;
+}
+
+.form-group{
+    margin-bottom:18px;
+}
+
+label{
+    display:block;
+    margin-bottom:8px;
+    font-weight:bold;
+}
+
+input, textarea, select{
+    width:100%;
+    padding:14px;
+    border:1px solid #ddd;
+    border-radius:10px;
+    font-size:14px;
+}
+
+textarea{
+    resize:vertical;
+    min-height:120px;
+}
+
+.save-btn{
+    background:#008000;
+    color:white;
+    border:none;
+    padding:14px 24px;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+}
+</style>
+
+<div class="events-container">
+
+    <div class="top-section">
+        <h1 class="page-title">Gestión de Eventos</h1>
+        <a href="#" class="add-btn">+ Agregar Evento</a>
+    </div>
+
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Día</th>
+                    <th>Horario</th>
+                    <th>Sede</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                <tr>
+                    <td>Conferencia de Innovación</td>
+                    <td>Lunes</td>
+                    <td>10:00 AM</td>
+                    <td>Auditorio Principal</td>
+                    <td>
+                        <button class="action-btn edit-btn">Editar</button>
+                        <button class="action-btn delete-btn">Eliminar</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Taller de IA</td>
+                    <td>Martes</td>
+                    <td>12:00 PM</td>
+                    <td>Laboratorio 2</td>
+                    <td>
+                        <button class="action-btn edit-btn">Editar</button>
+                        <button class="action-btn delete-btn">Eliminar</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>Hackathon Estudiantil</td>
+                    <td>Miércoles</td>
+                    <td>09:00 AM</td>
+                    <td>Centro de Cómputo</td>
+                    <td>
+                        <button class="action-btn edit-btn">Editar</button>
+                        <button class="action-btn delete-btn">Eliminar</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="form-box">
+        <h2>Nuevo Evento</h2>
+
+        <form>
+
+            <div class="form-group">
+                <label>Nombre del evento</label>
+                <input type="text" placeholder="Escribe el nombre">
+            </div>
+
+            <div class="form-group">
+                <label>Día</label>
+                <select>
+                    <option>Lunes</option>
+                    <option>Martes</option>
+                    <option>Miércoles</option>
+                    <option>Jueves</option>
+                    <option>Viernes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Horario</label>
+                <input type="text" placeholder="09:00 - 10:00">
+            </div>
+
+            <div class="form-group">
+                <label>Ponente</label>
+                <input type="text" placeholder="Nombre del ponente">
+            </div>
+
+            <div class="form-group">
+                <label>Sede / Ubicación</label>
+                <input type="text" placeholder="Ubicación">
+            </div>
+
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea placeholder="Descripción del evento"></textarea>
+            </div>
+
+            <button class="save-btn">
+                Guardar Evento
+            </button>
+
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

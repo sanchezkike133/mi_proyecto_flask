@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actividades - Viernes</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, sans-serif;
+}
+
+body{
+    background:#f5f7f5;
+    padding:40px;
+    color:#222;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+}
+
+h1{
+    color:#0a7d00;
+    margin-bottom:10px;
+    font-size:40px;
+}
+
+.subtitle{
+    color:#666;
+    margin-bottom:30px;
+}
+
+.tabs{
+    display:flex;
+    gap:15px;
+    margin-bottom:30px;
+    flex-wrap:wrap;
+}
+
+.tab{
+    padding:12px 22px;
+    border-radius:14px;
+    background:white;
+    border:1px solid #ddd;
+    text-decoration:none;
+    color:#222;
+    font-weight:bold;
+}
+
+.active{
+    background:#0a7d00;
+    color:white;
+}
+
+.card{
+    background:white;
+    border-radius:20px;
+    padding:25px;
+    margin-bottom:20px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.05);
+    border-left:5px solid #0a7d00;
+}
+
+.badge{
+    display:inline-block;
+    background:#e8f5e9;
+    color:#0a7d00;
+    padding:6px 14px;
+    border-radius:20px;
+    font-size:12px;
+    font-weight:bold;
+    margin-bottom:15px;
+}
+
+.card h2{
+    margin-bottom:10px;
+}
+
+.info{
+    color:#666;
+    margin-bottom:15px;
+    font-size:14px;
+}
+
+.back{
+    display:inline-block;
+    margin-top:30px;
+    background:#0a7d00;
+    color:white;
+    padding:14px 24px;
+    border-radius:14px;
+    text-decoration:none;
+    font-weight:bold;
+}
+
+.empty-state{
+    background:white;
+    border-radius:20px;
+    padding:60px;
+    text-align:center;
+    box-shadow:0 8px 20px rgba(0,0,0,0.05);
+}
+
+.empty-state h3{
+    color:#666;
+    margin-bottom:10px;
+}
+
+.empty-state p{
+    color:#999;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>Agenda de la Jornada</h1>
+    <p class="subtitle">
+        Programa oficial de actividades del día viernes
+    </p>
+
+    <div class="tabs">
+        <a href="{{ url_for('lunes') }}" class="tab">Lunes</a>
+        <a href="{{ url_for('martes') }}" class="tab">Martes</a>
+        <a href="{{ url_for('miercoles') }}" class="tab">Miércoles</a>
+        <a href="{{ url_for('jueves') }}" class="tab">Jueves</a>
+        <a href="{{ url_for('viernes') }}" class="tab active">Viernes</a>
+    </div>
+
+    <!-- MOSTRAR ACTIVIDADES DINÁMICAS -->
+    {% if actividades %}
+        {% for actividad in actividades %}
+        <div class="card">
+            <span class="badge">{{ actividad.category }}</span>
+            <h2>{{ actividad.title }}</h2>
+            <p class="info">
+                📍 {{ actividad.venue }} | 
+                👨‍🏫 {{ actividad.speaker }} | 
+                🕘 {{ actividad.start_time }}
+                {% if actividad.end_time %} - {{ actividad.end_time }}{% endif %}
+            </p>
+            <p>
+                {{ actividad.description or "Sin descripción disponible." }}
+            </p>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <h3>📅 No hay actividades programadas</h3>
+            <p>Todavía no se han registrado actividades para el día viernes.</p>
+        </div>
+    {% endif %}
+
+    <a href="{{ url_for('index') }}" class="back">
+        ← Regresar al inicio
+    </a>
+
+</div>
+
+</body>
+</html>

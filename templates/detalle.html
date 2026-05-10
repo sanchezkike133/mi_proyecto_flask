@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detalle de Actividad</title>
+
+<!-- ICONOS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: 'Segoe UI', sans-serif;
+}
+
+body{
+    background:#f4f7f5;
+    color:#222;
+}
+
+/* CONTENEDOR */
+.container{
+    max-width:1100px;
+    margin:auto;
+    padding:40px 20px;
+}
+
+/* TEXTOS */
+.eyebrow{
+    font-size:12px;
+    text-transform:uppercase;
+    color:#64748b;
+    letter-spacing:1px;
+}
+
+h1{
+    font-size:40px;
+    font-weight:800;
+    margin:10px 0;
+    color:#111827;
+}
+
+.subtitle{
+    color:#6b7280;
+    margin-bottom:40px;
+}
+
+/* GRID */
+.grid{
+    display:grid;
+    grid-template-columns:1fr 360px;
+    gap:25px;
+}
+
+/* TARJETAS */
+.card{
+    background:white;
+    border-radius:25px;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* INPUT VISUAL */
+.box{
+    background:#f1f5f9;
+    padding:14px;
+    border-radius:12px;
+    font-weight:bold;
+    color:#222;
+}
+
+/* BLOQUES */
+.block{
+    margin-bottom:20px;
+}
+
+/* FILA */
+.row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-bottom:15px;
+}
+
+/* ICON BOX */
+.icon-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    background:#f1f5f9;
+    padding:12px;
+    border-radius:12px;
+    color:#222;
+}
+
+/* ICONO */
+.icon{
+    width:30px;
+    height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#0a7d00;
+    border-radius:50%;
+    color:white;
+}
+
+/* LADO DERECHO */
+.side-box{
+    border:1px solid #dbe2ea;
+    padding:15px;
+    border-radius:12px;
+    margin-bottom:15px;
+    background:#fafafa;
+}
+
+/* BOTON */
+.btn{
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:12px;
+    font-weight:bold;
+    cursor:pointer;
+    background:#0a7d00;
+    color:white;
+    transition:0.3s;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+}
+
+.btn:hover{
+    background:#086600;
+}
+
+/* IMAGEN */
+.img{
+    width:100%;
+    height:180px;
+    object-fit:cover;
+    border-radius:12px;
+}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+
+    .grid{
+        grid-template-columns:1fr;
+    }
+
+    .row{
+        grid-template-columns:1fr;
+    }
+
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- ENCABEZADO -->
+    <div style="margin-bottom:20px;">
+        <span style="display:inline-block;width:40px;height:2px;background:#0a7d00;"></span>
+
+        <p class="eyebrow">
+            Gestión de contenidos
+        </p>
+    </div>
+
+    <h1>Visualización completa de la actividad</h1>
+
+    <p class="subtitle">
+        En este apartado se visualiza cada detalle de la actividad.
+    </p>
+
+    <div class="grid">
+
+        <!-- IZQUIERDA -->
+        <div class="card">
+
+            <!-- ACTIVIDAD -->
+            <div class="block">
+
+                <p class="eyebrow">
+                    Nombre de la actividad
+                </p>
+
+                <div class="box">
+                    {{ actividad.title }}
+                </div>
+
+            </div>
+
+            <!-- DATOS PRINCIPALES -->
+            <div class="row">
+
+                <div>
+
+                    <p class="eyebrow">
+                        Ponente
+                    </p>
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-user"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.speaker or "No disponible" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div>
+
+                    <p class="eyebrow">
+                        Fecha
+                    </p>
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-calendar"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.date }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- INFORMACIÓN DEL PONENTE -->
+            <div class="block">
+
+                <p class="eyebrow" style="margin-bottom:15px;">
+                    Información del ponente
+                </p>
+
+                <div class="row">
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-graduation-cap"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.career or "No especificado" }}
+                        </span>
+
+                    </div>
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-building"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.institution or "No especificado" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-envelope"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.speaker_email or "No disponible" }}
+                        </span>
+
+                    </div>
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-phone"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.speaker_phone or "No disponible" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="row">
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-award"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.academic_degree or "No especificado" }}
+                        </span>
+
+                    </div>
+
+                    <div class="icon-box">
+
+                        <div class="icon">
+                            <i class="fa fa-brain"></i>
+                        </div>
+
+                        <span>
+                            {{ actividad.specialty or "No especificado" }}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                <div class="icon-box" style="margin-bottom:15px;">
+
+                    <div class="icon">
+                        <i class="fa fa-briefcase"></i>
+                    </div>
+
+                    <span>
+                        {{ actividad.experience or "No especificado" }}
+                    </span>
+
+                </div>
+
+                <div class="icon-box">
+
+                    <div class="icon">
+                        <i class="fa fa-globe"></i>
+                    </div>
+
+                    <span>
+                        {{ actividad.social or "No disponible" }}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <!-- BIOGRAFÍA -->
+            <div class="block">
+
+                <p class="eyebrow">
+                    Biografía del ponente
+                </p>
+
+                <div class="box" style="min-height:100px;">
+
+                    {{ actividad.bio or "Sin biografía disponible." }}
+
+                </div>
+
+            </div>
+
+            <!-- DESCRIPCIÓN -->
+            <div class="block">
+
+                <p class="eyebrow">
+                    Descripción
+                </p>
+
+                <div class="box" style="min-height:120px;">
+
+                    {{ actividad.description or "Sin descripción." }}
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- DERECHA -->
+        <div>
+
+            <div class="card">
+
+                <p class="eyebrow" style="margin-bottom:10px;">
+                    Ubicación y horario
+                </p>
+
+                <div class="side-box">
+
+                    <p class="eyebrow">
+                        <i class="fa fa-map-marker-alt"></i>
+                        Sede
+                    </p>
+
+                    <strong>
+                        {{ actividad.venue or "No especificada" }}
+                    </strong>
+
+                </div>
+
+                <div class="side-box">
+
+                    <p class="eyebrow">
+                        <i class="fa fa-clock"></i>
+                        Hora
+                    </p>
+
+                    <strong>
+                        {{ actividad.start_time }} - {{ actividad.end_time or "No definida" }}
+                    </strong>
+
+                </div>
+
+                <!-- IMAGEN -->
+                <div style="margin-top:15px;">
+
+                    <p class="eyebrow">
+                        Imagen destacada
+                    </p>
+
+                    {% if actividad.image %}
+                        <img 
+                            src="{{ url_for('static', filename='uploads/' + actividad.image) }}"
+                            class="img"
+                        >
+                    {% else %}
+                        <img 
+                            src="https://via.placeholder.com/400x180"
+                            class="img"
+                        >
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+            <!-- BOTÓN -->
+            <div class="card">
+
+                <button onclick="window.history.back()" class="btn">
+
+                    <i class="fa fa-arrow-left"></i>
+
+                    Regresar
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
