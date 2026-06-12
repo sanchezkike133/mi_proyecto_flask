@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agregar Nueva Actividad - Jornada Académica</title>
+
+<!-- Font Awesome para iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, #f0f2f5 0%, #e0e5ec 100%);
+    color: #222;
+    padding: 40px 20px;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+}
+
+/* HEADER */
+.header {
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.header-badge {
+    display: inline-block;
+    background: #0a7d00;
+    color: white;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+.header h1 {
+    font-size: 36px;
+    color: #111;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.header span {
+    color: #666;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+/* FORMULARIO */
+.form-box {
+    background: white;
+    border-radius: 28px;
+    padding: 40px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+}
+
+.form-group {
+    margin-bottom: 24px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #333;
+    font-size: 14px;
+}
+
+label i {
+    color: #0a7d00;
+    width: 24px;
+}
+
+.required:after {
+    content: " *";
+    color: #dc3545;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 14px;
+    font-size: 15px;
+    outline: none;
+    background: white;
+    transition: all 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #0a7d00;
+    box-shadow: 0 0 0 3px rgba(10,125,0,0.1);
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* GRID */
+.grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+/* UPLOAD */
+.upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    background: #f8fafc;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.upload-box:hover {
+    border-color: #0a7d00;
+    background: #f0fdf4;
+}
+
+.upload-box img {
+    width: 200px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    border: 2px solid #e2e8f0;
+}
+
+.upload-box p {
+    font-weight: 600;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.upload-box span {
+    font-size: 12px;
+    color: #888;
+}
+
+/* BOTONES */
+.actions {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.btn {
+    padding: 15px;
+    border: none;
+    border-radius: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-save {
+    background: #0a7d00;
+    color: white;
+}
+
+.btn-save:hover {
+    background: #086600;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(10,125,0,0.3);
+}
+
+.btn-cancel {
+    background: white;
+    border: 2px solid #e2e8f0;
+    color: #555;
+}
+
+.btn-cancel:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+/* ALERTAS */
+.alert {
+    padding: 15px 20px;
+    border-radius: 14px;
+    margin-bottom: 25px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.alert-info {
+    background: #e8f5e9;
+    color: #0a7d00;
+    border: 1px solid #c8e6c9;
+}
+
+.alert i {
+    font-size: 20px;
+}
+
+/* Mensaje de error dinámico */
+.error-message {
+    background: #fdecea;
+    color: #c62828;
+    border: 1px solid #f5c6cb;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: none;
+}
+
+/* DÍA AUTOMÁTICO */
+.day-info {
+    background: #f0fdf4;
+    border: 1px solid #c8e6c9;
+    border-radius: 14px;
+    padding: 12px 16px;
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.day-info i {
+    color: #0a7d00;
+    margin-right: 8px;
+}
+
+.text-muted {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 5px;
+    display: block;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    body {
+        padding: 20px;
+    }
+    .form-box {
+        padding: 25px;
+    }
+    .grid-2, .grid-3, .actions {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    .header h1 {
+        font-size: 28px;
+    }
+}
+
+/* SELECT personalizado */
+select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23333' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 16px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <div class="header-badge">
+            <i class="fas fa-plus-circle"></i> Panel de administración
+        </div>
+        <h1>
+            <i class="fas fa-calendar-plus" style="color:#0a7d00;"></i>
+            Agregar nueva actividad
+        </h1>
+        <span>
+            Complete el formulario para integrar una nueva actividad a la agenda.
+        </span>
+    </div>
+
+    <div class="form-box">
+        <!-- ALERTAS INFORMATIVAS -->
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            <span>Los campos marcados con <strong style="color:#dc3545;">*</strong> son obligatorios.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-calendar-alt"></i>
+            <span><strong>Clasificación automática:</strong> Si la fecha es en <strong>diciembre</strong>, la actividad se considerará parte de la <strong>Jornada Académica</strong> y se calculará automáticamente su número de edición. Si es en cualquier otro mes, será un <strong>evento extracurricular</strong>.</span>
+        </div>
+
+        <div class="alert alert-info">
+            <i class="fas fa-clock"></i>
+            <span><strong>Restricciones de horario:</strong> Solo se permiten actividades entre <strong>08:00 y 18:00</strong>, con una duración mínima de <strong>10 minutos</strong>.</span>
+        </div>
+
+        <!-- Contenedor de errores dinámico -->
+        <div id="formErrors" class="error-message"></div>
+
+        <form 
+            method="POST" 
+            action="{{ url_for('admin.nueva_actividad') }}"
+            enctype="multipart/form-data"
+            id="actividadForm"
+        >
+            <!-- NOMBRE DE LA ACTIVIDAD -->
+            <div class="form-group">
+                <label class="required">
+                    <i class="fas fa-tag"></i> Nombre de la actividad
+                </label>
+                <input 
+                    type="text" 
+                    name="title" 
+                    id="titleInput"
+                    placeholder="Ej. Inteligencia Artificial en el Diseño"
+                    required
+                >
+            </div>
+
+            <!-- CATEGORÍA Y FECHA -->
+            <div class="grid-2">
+                <!-- CATEGORÍA (con opción otro) -->
+                <div class="form-group">
+                    <label class="required">
+                        <i class="fas fa-layer-group"></i> Categoría
+                    </label>
+                    <select id="categorySelect" required>
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Inauguración">🎉 Inauguración</option>
+                        <option value="Término">🏁 Término</option>
+                        <option value="Conferencias académicas">📚 Conferencias académicas</option>
+                        <option value="Proyecciones y narrativas">🎬 Proyecciones y narrativas</option>
+                        <option value="Expresiones artísticas">🎨 Expresiones artísticas</option>
+                        <option value="Talleres prácticos">🛠️ Talleres prácticos</option>
+                        <option value="Eventos tecnológicos">💻 Eventos tecnológicos</option>
+                        <option value="Concursos y dinámicas estudiantiles">🏆 Concursos y dinámicas estudiantiles</option>
+                        <option value="Exposiciones y muestras de proyectos">🖼️ Exposiciones y muestras de proyectos</option>
+                        <option value="Actividades de vinculación y networking">🤝 Actividades de vinculación y networking</option>
+                        <option value="Mesas redondas y paneles de discusión">🗣️ Mesas redondas y paneles de discusión</option>
+                        <option value="otro">📝 Otro (especificar)</option>
+                    </select>
+                    <!-- Campo para "otro" categoría -->
+                    <div id="otroCategoriaGroup" style="display:none; margin-top: 10px;">
+                        <input type="text" id="otroCategoriaInput" class="form-control" placeholder="Escriba la categoría">
+                    </div>
+                    <!-- Campo oculto para enviar el valor real -->
+                    <input type="hidden" name="category" id="categoryHidden">
+                </div>
+
+                <div class="form-group">
+                    <label class="required">
+                        <i class="fas fa-calendar-alt"></i> Fecha
+                    </label>
+                    <input 
+                        type="date" 
+                        name="date"
+                        id="fechaActividad"
+                        required
+                    >
+                    <div id="dayPreview" class="day-info" style="display:none;">
+                        <i class="fas fa-calendar-day"></i>
+                        Día calculado: <strong id="diaSemana"></strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HORARIO -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="required">
+                        <i class="fas fa-hourglass-start"></i> Hora inicio
+                    </label>
+                    <input 
+                        type="time" 
+                        name="start_time"
+                        id="startTime"
+                        required
+                        step="60"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label class="required">
+                        <i class="fas fa-hourglass-end"></i> Hora fin
+                    </label>
+                    <input 
+                        type="time" 
+                        name="end_time"
+                        id="endTime"
+                        required
+                        step="60"
+                    >
+                </div>
+            </div>
+
+            <!-- CAMPO OCULTO PARA EL DÍA -->
+            <input type="hidden" name="day" id="dayHidden">
+
+            <!-- PONENTE -->
+            <div class="form-group">
+                <label class="required">
+                    <i class="fas fa-user-tie"></i> Ponente / Responsable
+                </label>
+                <input 
+                    type="text" 
+                    name="speaker"
+                    id="speakerInput"
+                    placeholder="Nombre completo del ponente"
+                    required
+                >
+            </div>
+
+            <!-- DIRIGIDO A (antes Carrera/Área) con opciones -->
+            <div class="form-group">
+                <label class="required">
+                    <i class="fas fa-users"></i> Dirigido a
+                </label>
+                <select id="careerSelect" required>
+                    <option value="">Seleccionar público objetivo</option>
+                    <option value="Ingeniería en Sistemas Computacionales">💻 Ingeniería en Sistemas Computacionales</option>
+                    <option value="Ingeniería en Innovación Agrícola Sustentable">🌱 Ingeniería en Innovación Agrícola Sustentable</option>
+                    <option value="Licenciatura en Contaduría">📊 Licenciatura en Contaduría</option>
+                    <option value="Público en general">👥 Público en general</option>
+                    <option value="otro">📝 Otro (especificar)</option>
+                </select>
+                <!-- Campo para "otro" dirigido a -->
+                <div id="otroCareerGroup" style="display:none; margin-top: 10px;">
+                    <input type="text" id="otroCareerInput" class="form-control" placeholder="Escriba el público objetivo">
+                </div>
+                <!-- Campo oculto para enviar el valor real -->
+                <input type="hidden" name="career" id="careerHidden">
+            </div>
+
+            <!-- Institución -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-building"></i> Institución
+                </label>
+                <input 
+                    type="text" 
+                    name="institution"
+                    placeholder="Ej. UES San José del Rincón"
+                >
+            </div>
+
+            <!-- CONTACTO -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-envelope"></i> Correo electrónico
+                    </label>
+                    <input 
+                        type="email" 
+                        name="speaker_email"
+                        placeholder="ponente@ejemplo.com"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-phone"></i> Teléfono de contacto
+                    </label>
+                    <input 
+                        type="tel" 
+                        name="speaker_phone"
+                        placeholder="999 123 4567"
+                    >
+                </div>
+            </div>
+
+            <!-- GRADO Y ESPECIALIDAD -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-award"></i> Grado académico
+                    </label>
+                    <select name="academic_degree">
+                        <option value="">Seleccionar grado</option>
+                        <option>Licenciatura</option>
+                        <option>Ingeniería</option>
+                        <option>Maestría</option>
+                        <option>Doctorado</option>
+                        <option>Especialidad</option>
+                        <option>Técnico Superior</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        <i class="fas fa-brain"></i> Especialidad / Área
+                    </label>
+                    <input 
+                        type="text" 
+                        name="specialty"
+                        placeholder="Ej. Inteligencia Artificial"
+                    >
+                </div>
+            </div>
+
+            <!-- EXPERIENCIA -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-briefcase"></i> Años de experiencia
+                </label>
+                <input 
+                    type="text" 
+                    name="experience"
+                    placeholder="Ej. 10 años en docencia e investigación"
+                >
+            </div>
+
+            <!-- REDES SOCIALES -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-globe"></i> Redes sociales o sitio web
+                </label>
+                <input 
+                    type="url" 
+                    name="social"
+                    placeholder="https://linkedin.com/in/ponente"
+                >
+            </div>
+
+            <!-- BIOGRAFÍA -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-user-astronaut"></i> Biografía del ponente
+                </label>
+                <textarea 
+                    name="bio"
+                    rows="4"
+                    placeholder="Describa la trayectoria, logros y experiencia del ponente..."
+                ></textarea>
+            </div>
+
+            <!-- ========== SEDE INTELIGENTE ========== -->
+            <div class="form-group">
+                <label class="required">
+                    <i class="fas fa-location-dot"></i> Sede / Auditorio
+                </label>
+                <select id="venueType" class="form-control" required>
+                    <option value="">Seleccionar tipo de sede</option>
+                    <option value="Aula Magna">📚 Aula Magna</option>
+                    <option value="Salón de Conferencias">🏛️ Salón de Conferencias</option>
+                    <option value="Plazoleta Institucional">🏟️ Plazoleta Institucional</option>
+                    <option value="Sala de Cómputo">💻 Sala de Cómputo</option>
+                    <option value="aula_clase">🏫 Aula de clase (inteligente)</option>
+                    <option value="otro">✏️ Otro (especificar)</option>
+                </select>
+            </div>
+
+            <!-- Campo dinámico para Aula de clase -->
+            <div id="aulaClaseGroup" style="display:none;" class="form-group">
+                <label>Seleccionar aula según periodo</label>
+                <select id="aulaClaseSelect" class="form-control">
+                    <option value="">-- Seleccione un aula --</option>
+                </select>
+                <small class="text-muted">Las aulas se actualizan automáticamente según el periodo académico de la fecha.</small>
+            </div>
+
+            <!-- Campo dinámico para "Otro" en sede -->
+            <div id="otroGroup" style="display:none;" class="form-group">
+                <label>Especificar sede</label>
+                <input type="text" id="otroInput" class="form-control" placeholder="Ej. Biblioteca Central, Gimnasio, etc.">
+            </div>
+
+            <!-- Campo oculto que enviará el valor final de venue (con nombre "venue") -->
+            <input type="hidden" name="venue" id="venueFinal" value="">
+
+            <!-- DESCRIPCIÓN -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-file-alt"></i> Descripción de la actividad
+                </label>
+                <textarea 
+                    name="description"
+                    rows="5"
+                    placeholder="Describa el contenido, objetivos y temario de la actividad..."
+                ></textarea>
+            </div>
+
+            <!-- IMAGEN DEL PONENTE (PORTADA) -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-image"></i> Imagen del ponente o portada
+                </label>
+                <div class="upload-box" onclick="document.getElementById('imagen').click()">
+                    <img
+                        id="preview"
+                        src="{{ url_for('static', filename='img/imagen2.png') }}"
+                        alt="Vista previa"
+                    >
+                    <p><i class="fas fa-cloud-upload-alt"></i> Haz clic o arrastra una imagen</p>
+                    <span>Formatos: JPG, PNG, GIF (Máx. 16MB)</span>
+                    <input
+                        type="file"
+                        name="imagen"
+                        id="imagen"
+                        accept="image/jpeg,image/png,image/gif"
+                        style="display:none;"
+                        onchange="mostrarPreview(event)"
+                    >
+                </div>
+                <small style="display:block; margin-top:8px; color:#888;">
+                    <i class="fas fa-info-circle"></i> Imagen recomendada: 800x600px
+                </small>
+            </div>
+
+            <!-- ================== LOGO INSTITUCIONAL (nuevo) ================== -->
+            <div class="form-group">
+                <label>
+                    <i class="fas fa-building"></i> Logo de la institución (opcional)
+                </label>
+                <div class="upload-box" onclick="document.getElementById('logoInstitucion').click()">
+                    <img
+                        id="previewLogo"
+                        src="{{ url_for('static', filename='img/imagen2.png') }}"
+                        alt="Vista previa del logo"
+                    >
+                    <p><i class="fas fa-cloud-upload-alt"></i> Haz clic o arrastra un logo</p>
+                    <span>Formatos: JPG, PNG (Máx. 16MB). Se mostrará en el PDF del código QR.</span>
+                    <input
+                        type="file"
+                        name="logo_institucion"
+                        id="logoInstitucion"
+                        accept="image/jpeg,image/png,image/gif"
+                        style="display:none;"
+                        onchange="mostrarPreviewLogo(event)"
+                    >
+                </div>
+                <small class="text-muted">Si la actividad representa a una institución, sube su logo para que aparezca decorativamente en el PDF.</small>
+            </div>
+            <!-- ============================================================= -->
+
+            <!-- BOTONES -->
+            <div class="actions">
+                <button type="submit" class="btn btn-save">
+                    <i class="fas fa-save"></i> Guardar actividad
+                </button>
+                <button type="button" onclick="window.location.href='{{ url_for('admin.dashboard') }}'" class="btn btn-cancel">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// ==================== PREVISUALIZACIÓN DE IMAGEN DEL PONENTE ====================
+function mostrarPreview(event) {
+    const input = event.target;
+    const preview = document.getElementById("preview");
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// ==================== PREVISUALIZACIÓN DE LOGO INSTITUCIONAL ====================
+function mostrarPreviewLogo(event) {
+    const input = event.target;
+    const preview = document.getElementById("previewLogo");
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// ==================== DÍA DE LA SEMANA (CORREGIDO para evitar desfase UTC) ====================
+function calcularDiaSemana(fechaString) {
+    const dias = {
+        'Monday': 'lunes', 'Tuesday': 'martes', 'Wednesday': 'miercoles',
+        'Thursday': 'jueves', 'Friday': 'viernes', 'Saturday': 'sabado', 'Sunday': 'domingo'
+    };
+    const fecha = new Date(fechaString + 'T12:00:00');
+    const diaIngles = fecha.toLocaleDateString('en-US', { weekday: 'long' });
+    return dias[diaIngles] || '';
+}
+
+document.getElementById('fechaActividad').addEventListener('change', function() {
+    const fecha = this.value;
+    const dayPreview = document.getElementById('dayPreview');
+    const diaSemanaSpan = document.getElementById('diaSemana');
+    const dayHidden = document.getElementById('dayHidden');
+    
+    if (fecha) {
+        const dia = calcularDiaSemana(fecha);
+        const fechaObj = new Date(fecha + 'T12:00:00');
+        const fechaFormateada = fechaObj.toLocaleDateString('es-ES', {
+            year: 'numeric', month: 'long', day: 'numeric'
+        });
+        diaSemanaSpan.innerHTML = `${dia.charAt(0).toUpperCase() + dia.slice(1)} - ${fechaFormateada}`;
+        dayHidden.value = dia;
+        dayPreview.style.display = 'block';
+    } else {
+        dayPreview.style.display = 'none';
+        dayHidden.value = '';
+    }
+    
+    if (document.getElementById('venueType').value === 'aula_clase') {
+        actualizarAulasSegunFecha();
+    }
+});
+
+// ==================== SEDE INTELIGENTE ====================
+const gruposPeriodo1 = [
+    "13SC111", "13AG111", "13LC111",
+    "13SC131", "13AG131", "13LC131",
+    "13SC151", "13AG151", "13LC151",
+    "13SC171", "13AG171", "13LC171"
+];
+const gruposPeriodo2 = [
+    "13SC121", "13AG121", "13LC121",
+    "13SC141", "13AG141", "13LC141",
+    "13SC161", "13AG161", "13LC161",
+    "13SC181", "13AG181", "13LC181"
+];
+
+function getPeriodoPorFecha(fechaStr) {
+    if (!fechaStr) fechaStr = new Date().toISOString().slice(0,10);
+    const fecha = new Date(fechaStr);
+    const mes = fecha.getMonth() + 1;
+    return (mes >= 9 || mes <= 2) ? 1 : 2;
+}
+
+function getAulasPorPeriodo(periodo) {
+    return periodo === 1 ? [...gruposPeriodo1] : [...gruposPeriodo2];
+}
+
+function actualizarAulasSegunFecha() {
+    const fecha = document.getElementById('fechaActividad').value;
+    const periodo = getPeriodoPorFecha(fecha);
+    const aulas = getAulasPorPeriodo(periodo);
+    const select = document.getElementById('aulaClaseSelect');
+    select.innerHTML = '<option value="">-- Seleccione un aula --</option>';
+    aulas.forEach(aula => {
+        const option = document.createElement('option');
+        option.value = aula;
+        option.textContent = aula;
+        select.appendChild(option);
+    });
+}
+
+const venueType = document.getElementById('venueType');
+const aulaClaseGroup = document.getElementById('aulaClaseGroup');
+const otroGroup = document.getElementById('otroGroup');
+const aulaClaseSelect = document.getElementById('aulaClaseSelect');
+const otroInput = document.getElementById('otroInput');
+const venueFinal = document.getElementById('venueFinal');
+
+function actualizarCamposSede() {
+    aulaClaseGroup.style.display = 'none';
+    otroGroup.style.display = 'none';
+    const selected = venueType.value;
+    if (selected === 'aula_clase') {
+        aulaClaseGroup.style.display = 'block';
+        actualizarAulasSegunFecha();
+    } else if (selected === 'otro') {
+        otroGroup.style.display = 'block';
+    }
+}
+
+venueType.addEventListener('change', actualizarCamposSede);
+document.getElementById('fechaActividad').addEventListener('change', function() {
+    if (venueType.value === 'aula_clase') actualizarAulasSegunFecha();
+});
+actualizarCamposSede();
+
+// ==================== CATEGORÍA INTELIGENTE ====================
+const categorySelect = document.getElementById('categorySelect');
+const otroCategoriaGroup = document.getElementById('otroCategoriaGroup');
+const otroCategoriaInput = document.getElementById('otroCategoriaInput');
+const categoryHidden = document.getElementById('categoryHidden');
+
+function actualizarCategoria() {
+    const selected = categorySelect.value;
+    if (selected === 'otro') {
+        otroCategoriaGroup.style.display = 'block';
+        otroCategoriaInput.setAttribute('required', 'required');
+        categoryHidden.value = '';
+    } else {
+        otroCategoriaGroup.style.display = 'none';
+        otroCategoriaInput.removeAttribute('required');
+        categoryHidden.value = selected;
+    }
+}
+categorySelect.addEventListener('change', actualizarCategoria);
+otroCategoriaInput.addEventListener('input', function() {
+    categoryHidden.value = otroCategoriaInput.value.trim() || '';
+});
+actualizarCategoria();
+
+// ==================== DIRIGIDO A INTELIGENTE ====================
+const careerSelect = document.getElementById('careerSelect');
+const otroCareerGroup = document.getElementById('otroCareerGroup');
+const otroCareerInput = document.getElementById('otroCareerInput');
+const careerHidden = document.getElementById('careerHidden');
+
+function actualizarCareer() {
+    const selected = careerSelect.value;
+    if (selected === 'otro') {
+        otroCareerGroup.style.display = 'block';
+        otroCareerInput.setAttribute('required', 'required');
+        careerHidden.value = '';
+    } else {
+        otroCareerGroup.style.display = 'none';
+        otroCareerInput.removeAttribute('required');
+        careerHidden.value = selected;
+    }
+}
+careerSelect.addEventListener('change', actualizarCareer);
+otroCareerInput.addEventListener('input', function() {
+    careerHidden.value = otroCareerInput.value.trim() || '';
+});
+actualizarCareer();
+
+// ==================== VALIDACIONES DE HORARIO Y CAMPOS ====================
+const form = document.getElementById('actividadForm');
+const startTimeInput = document.getElementById('startTime');
+const endTimeInput = document.getElementById('endTime');
+const titleInput = document.getElementById('titleInput');
+const speakerInput = document.getElementById('speakerInput');
+const errorDiv = document.getElementById('formErrors');
+
+function mostrarError(mensaje) {
+    errorDiv.innerHTML = mensaje;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 8000);
+}
+
+function validarHorarioCliente() {
+    const start = startTimeInput.value;
+    const end = endTimeInput.value;
+    if (!start || !end) {
+        mostrarError('⚠️ Debe especificar hora de inicio y fin.');
+        return false;
+    }
+    function toMinutes(t) {
+        const [h, m] = t.split(':').map(Number);
+        return h * 60 + m;
+    }
+    const startMin = toMinutes(start);
+    const endMin = toMinutes(end);
+    const minPermitido = 8 * 60;
+    const maxPermitido = 18 * 60;
+    if (startMin < minPermitido || endMin > maxPermitido) {
+        mostrarError('⏰ El horario debe estar entre las 08:00 y las 18:00 horas.');
+        return false;
+    }
+    if (startMin >= endMin) {
+        mostrarError('⏰ La hora de inicio debe ser anterior a la hora de fin.');
+        return false;
+    }
+    if (endMin - startMin < 10) {
+        mostrarError('⏱️ La duración mínima de la actividad es de 10 minutos.');
+        return false;
+    }
+    return true;
+}
+
+form.addEventListener('submit', function(e) {
+    errorDiv.style.display = 'none';
+    errorDiv.innerHTML = '';
+    
+    if (!titleInput.value.trim()) {
+        e.preventDefault();
+        mostrarError('❌ El campo "Nombre de la actividad" es obligatorio.');
+        return;
+    }
+    if (!speakerInput.value.trim()) {
+        e.preventDefault();
+        mostrarError('❌ El campo "Ponente" es obligatorio.');
+        return;
+    }
+    const fecha = document.getElementById('fechaActividad').value;
+    if (!fecha) {
+        e.preventDefault();
+        mostrarError('❌ La fecha es obligatoria.');
+        return;
+    }
+    
+    if (!validarHorarioCliente()) {
+        e.preventDefault();
+        return;
+    }
+    
+    const catVal = categoryHidden.value;
+    if (!catVal) {
+        e.preventDefault();
+        mostrarError('📌 Debe seleccionar una categoría o especificarla en "Otro".');
+        return;
+    }
+    
+    const careerVal = careerHidden.value;
+    if (!careerVal) {
+        e.preventDefault();
+        mostrarError('🎯 Debe seleccionar a quién va dirigida la actividad o especificarlo en "Otro".');
+        return;
+    }
+    
+    const dayHidden = document.getElementById('dayHidden').value;
+    if (fecha && !dayHidden) {
+        e.preventDefault();
+        mostrarError('📅 Seleccione una fecha válida para calcular el día de la semana.');
+        return;
+    }
+    
+    const selectedType = venueType.value;
+    let sedeValor = '';
+    if (selectedType === 'aula_clase') {
+        if (!aulaClaseSelect.value) {
+            e.preventDefault();
+            mostrarError('🏫 Debe seleccionar un aula de clase.');
+            return;
+        }
+        sedeValor = aulaClaseSelect.value;
+    } else if (selectedType === 'otro') {
+        if (!otroInput.value.trim()) {
+            e.preventDefault();
+            mostrarError('✏️ Debe especificar la sede en el campo "Otro".');
+            return;
+        }
+        sedeValor = otroInput.value.trim();
+    } else if (selectedType && selectedType !== '') {
+        sedeValor = selectedType;
+    } else {
+        e.preventDefault();
+        mostrarError('📍 Seleccione un tipo de sede.');
+        return;
+    }
+    venueFinal.value = sedeValor;
+    
+    aulaClaseSelect.disabled = true;
+    otroInput.disabled = true;
+});
+
+// Mostrar errores flash del servidor (si existen)
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                {% for message in messages %}
+                    mostrarError('{{ message }}');
+                {% endfor %}
+            }, 100);
+        });
+    {% endif %}
+{% endwith %}
+</script>
+
+</body>
+</html>

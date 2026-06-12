@@ -1,0 +1,1244 @@
+{% extends "base.html" %}
+
+{% block title %}Panel de Administración - Jornada {{ current_jornada_year }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+/* KPI CARDS */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+.kpi-card {
+    background: white;
+    border-radius: 1.5rem;
+    padding: 1.2rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    border-left: 4px solid #008000;
+}
+.kpi-card:hover { transform: translateY(-3px); }
+.kpi-title { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 0.5rem; }
+.kpi-value { font-size: 2rem; font-weight: 800; color: #1e293b; margin-bottom: 0.25rem; }
+.kpi-sub { font-size: 0.75rem; color: #475569; }
+.kpi-sub a { color: #008000; text-decoration: none; }
+.skeleton-card { background: white; border-radius: 1.5rem; padding: 1.2rem; }
+.skeleton-line { height: 1rem; background: #e2e8f0; border-radius: 0.5rem; margin-bottom: 0.6rem; animation: pulse 1.5s infinite; }
+.skeleton-line.title { width: 60%; height: 1.5rem; }
+@keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+
+/* TABS principales */
+.main-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+.main-tab-btn {
+    background: none;
+    border: none;
+    padding: 12px 28px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 30px 30px 0 0;
+    transition: 0.3s;
+}
+.main-tab-btn.active {
+    color: #008000;
+    background: #f0fdf4;
+    border-bottom: 3px solid #008000;
+}
+.sub-tabs {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #eef2f6;
+}
+.sub-tab-btn {
+    background: none;
+    border: none;
+    padding: 8px 20px;
+    font-weight: 500;
+    color: #64748b;
+    cursor: pointer;
+    border-radius: 30px 30px 0 0;
+}
+.sub-tab-btn.active {
+    color: #008000;
+    background: #f8fafc;
+    border-bottom: 2px solid #008000;
+}
+.tab-content-pane {
+    display: none;
+}
+.tab-content-pane.active {
+    display: block;
+}
+
+/* FILTROS */
+.filter-bar {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+.filter-group { flex: 1; min-width: 150px; }
+.filter-group label { display: block; font-size: 12px; font-weight: 600; color: #475569; margin-bottom: 6px; }
+.filter-group input, .filter-group select { width: 100%; padding: 10px 14px; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; }
+.btn-filter { background: #f1f5f9; border: none; padding: 10px 20px; border-radius: 12px; cursor: pointer; font-weight: 500; }
+.btn-filter:hover { background: #e2e8f0; }
+
+/* Tabla mejorada */
+.activities-table-wrapper {
+    background: white;
+    border-radius: 24px;
+    overflow-x: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.activities-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 1300px;
+    font-size: 0.85rem;
+}
+.activities-table th {
+    text-align: left;
+    padding: 12px 8px;
+    background: #f8fafc;
+    font-weight: 600;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+}
+.activities-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.activities-table td:first-child,
+.activities-table th:first-child {
+    padding-left: 16px;
+}
+.activities-table td:last-child,
+.activities-table th:last-child {
+    padding-right: 16px;
+}
+.badge-category {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: #e8f5e9;
+    color: #008000;
+    white-space: nowrap;
+}
+.badge-jornada { background: #008000; color: white; }
+.badge-extra { background: #f97316; color: white; }
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.status-active {
+    background: #e0e7ff;
+    color: #1e40af;
+}
+.status-encurso {
+    background: #fef3c7;
+    color: #b45309;
+}
+.status-finished {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ===== MEJORA EN ACCIONES ===== */
+.actions-cell {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.action-icon {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 6px;
+    border-radius: 8px;
+    transition: 0.2s;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+.action-icon.view { color: #008000; }
+.action-icon.edit { color: #f59e0b; }
+.action-icon.delete { color: #ef4444; }
+.action-icon.qr { color: #6c757d; }
+.action-icon.qr-view { color: #0d6efd; }
+.action-icon:hover { background: #f1f5f9; transform: scale(1.05); }
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 25px;
+    flex-wrap: wrap;
+}
+.pagination button, .pagination span {
+    background: white;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.pagination button.active {
+    background: #008000;
+    color: white;
+    border-color: #008000;
+}
+.pagination button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Acciones masivas */
+.bulk-actions {
+    background: #f8fafc;
+    padding: 12px 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+.bulk-actions.hidden { display: none; }
+
+/* Tabla de usuarios */
+.users-table-wrapper {
+    background: white;
+    border-radius: 20px;
+    overflow-x: auto;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.users-table { width: 100%; border-collapse: collapse; min-width: 800px; }
+.users-table th, .users-table td { padding: 14px 16px; text-align: left; border-bottom: 1px solid #eef2f6; }
+
+/* Modal vista rápida */
+.quickview-modal .modal-dialog { max-width: 700px; }
+.quickview-detail { margin-bottom: 12px; }
+.quickview-detail strong { display: inline-block; width: 130px; }
+
+/* Botón de estado de usuario */
+.user-status-toggle {
+    cursor: pointer;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: none;
+    transition: 0.2s;
+}
+.user-status-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.user-status-active {
+    background: #e8f5e9;
+    color: #008000;
+}
+.user-status-inactive {
+    background: #fdecea;
+    color: #c62828;
+}
+
+/* ===== NOTIFICACIONES ===== */
+.notificaciones-list {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+.notificacion-item {
+    padding: 15px 20px;
+    border-bottom: 1px solid #eef2f6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s;
+}
+.notificacion-item.no-leida {
+    background: #fefce8;
+    border-left: 4px solid #eab308;
+}
+.notificacion-item:hover {
+    background: #f8fafc;
+}
+.notificacion-contenido {
+    flex: 1;
+}
+.notificacion-mensaje {
+    font-size: 0.9rem;
+    color: #1e293b;
+    margin-bottom: 5px;
+}
+.notificacion-fecha {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+.notificacion-acciones button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    transition: 0.2s;
+}
+.notificacion-acciones button:hover {
+    background: #e2e8f0;
+    color: #008000;
+}
+.btn-marcar-todas {
+    background: #f1f5f9;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 30px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+.btn-marcar-todas:hover {
+    background: #e2e8f0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-tachometer-alt"></i> Panel de Control</h1>
+        <div><span class="badge bg-success">Administrador: {{ current_user.username }} ({{ current_user.role.name }})</span></div>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div id="kpiContainer" class="kpi-grid">
+        <div class="skeleton-card"><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:40%"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:40%"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:40%"></div></div>
+        <div class="skeleton-card"><div class="skeleton-line title"></div><div class="skeleton-line"></div><div class="skeleton-line" style="width:40%"></div></div>
+    </div>
+
+    <!-- Pestañas principales -->
+    <div class="main-tabs">
+        <button class="main-tab-btn active" data-main-tab="jornada">📅 Jornada Académica</button>
+        <button class="main-tab-btn" data-main-tab="generales">🎓 Eventos Generales</button>
+        {% if current_user.role and current_user.role.name == 'superadmin' %}
+        <button class="main-tab-btn" data-main-tab="usuarios">👥 Usuarios</button>
+        <button class="main-tab-btn" data-main-tab="notificaciones">🔔 Notificaciones</button>
+        {% endif %}
+    </div>
+
+    <!-- JORNADA ACADÉMICA -->
+    <div id="main-tab-jornada" class="tab-content-pane active">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h2><i class="fas fa-calendar-alt"></i> Actividades de la Jornada</h2>
+            <div>
+                <a href="{{ url_for('admin.nueva_actividad') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Nueva actividad</a>
+                <button id="exportJornadaBtn" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf"></i> Exportar</button>
+            </div>
+        </div>
+        <div class="sub-tabs">
+            <button class="sub-tab-btn active" data-jornada-dia="todos">Todos los días</button>
+            <button class="sub-tab-btn" data-jornada-dia="lunes">Lunes</button>
+            <button class="sub-tab-btn" data-jornada-dia="martes">Martes</button>
+            <button class="sub-tab-btn" data-jornada-dia="miercoles">Miércoles</button>
+            <button class="sub-tab-btn" data-jornada-dia="jueves">Jueves</button>
+            <button class="sub-tab-btn" data-jornada-dia="viernes">Viernes</button>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-group"><label>🔍 Buscar</label><input type="text" id="searchJornada" placeholder="Título o ponente..."></div>
+            <div class="filter-group"><label>🏷️ Categoría</label><select id="catJornada"><option value="">Todas</option><option>Inauguración</option><option>Término</option><option>Conferencias académicas</option><option>Talleres prácticos</option><option>Exposiciones</option><option>Eventos especiales</option></select></div>
+            <div class="filter-group"><label>🎯 Dirigido a</label><select id="careerJornada"><option value="">Todos</option><option>Ingeniería en Sistemas Computacionales</option><option>Ingeniería en Innovación Agrícola Sustentable</option><option>Licenciatura en Contaduría</option><option>Público en general</option></select></div>
+            <div class="filter-group"><label>✅ Estado</label>
+                <select id="estadoJornada">
+                    <option value="">Todas</option>
+                    <option value="activo">🔵 Activas (futuras)</option>
+                    <option value="en_curso">🟢 En curso</option>
+                    <option value="finalizado">⚫ Finalizadas</option>
+                </select>
+            </div>
+            <div><button id="clearJornadaFilters" class="btn-filter"><i class="fas fa-eraser"></i> Limpiar</button></div>
+        </div>
+        <div class="activities-table-wrapper">
+            <table class="activities-table">
+                <thead>
+                    <tr><th>Título</th><th>Categoría</th><th>Dirigido a</th><th>Día</th><th>Hora</th><th>Ponente</th><th>Sede</th><th>Estado</th><th>Interesados</th><th>Acciones</th></tr>
+                </thead>
+                <tbody id="jornadaTableBody">...</tbody>
+            </table>
+        </div>
+        <div class="pagination" id="jornadaPagination"></div>
+    </div>
+
+    <!-- EVENTOS GENERALES -->
+    <div id="main-tab-generales" class="tab-content-pane">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h2><i class="fas fa-star-of-life"></i> Eventos Generales</h2>
+            <div>
+                <a href="{{ url_for('admin.nueva_actividad') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Nuevo evento</a>
+                <button id="exportGeneralesUnificadoBtn" class="btn btn-primary btn-sm"><i class="fas fa-file-pdf"></i> Exportar</button>
+            </div>
+        </div>
+        <div class="filter-bar">
+            <div class="filter-group"><label>🔍 Buscar</label><input type="text" id="searchGenerales" placeholder="Título o ponente..."></div>
+            <div class="filter-group"><label>🏷️ Categoría</label>
+                <select id="catGenerales">
+                    <option value="">Todas</option>
+                    <option value="Inauguración">Inauguración</option>
+                    <option value="Término">Término</option>
+                    <option value="Conferencias académicas">Conferencias académicas</option>
+                    <option value="Proyecciones y narrativas">Proyecciones y narrativas</option>
+                    <option value="Expresiones artísticas">Expresiones artísticas</option>
+                    <option value="Talleres prácticos">Talleres prácticos</option>
+                    <option value="Eventos tecnológicos">Eventos tecnológicos</option>
+                    <option value="Concursos y dinámicas estudiantiles">Concursos y dinámicas estudiantiles</option>
+                    <option value="Exposiciones y muestras de proyectos">Exposiciones y muestras de proyectos</option>
+                    <option value="Actividades de vinculación y networking">Actividades de vinculación y networking</option>
+                    <option value="Mesas redondas y paneles de discusión">Mesas redondas y paneles de discusión</option>
+                    <option value="Conferencia">Conferencia</option>
+                    <option value="Taller">Taller</option>
+                    <option value="Panel">Panel</option>
+                    <option value="Evento Especial">Evento Especial</option>
+                    <option value="Exposición">Exposición</option>
+                    <option value="Otro">Otro</option>
+                </select>
+            </div>
+            <div class="filter-group"><label>🎯 Dirigido a</label><select id="careerGenerales"><option value="">Todos</option><option>Ingeniería en Sistemas Computacionales</option><option>Ingeniería en Innovación Agrícola Sustentable</option><option>Licenciatura en Contaduría</option><option>Público en general</option></select></div>
+            <div class="filter-group"><label>📅 Año</label><select id="anioGenerales"><option value="">Todos</option></select></div>
+            <div class="filter-group"><label>📆 Mes</label><select id="mesGenerales"><option value="">Todos</option></select></div>
+            <div class="filter-group"><label>📌 Día</label><select id="diaGenerales"><option value="">Todos</option></select></div>
+            <div class="filter-group"><label>✅ Estado</label>
+                <select id="estadoGenerales">
+                    <option value="">Todas</option>
+                    <option value="activo">🔵 Activas (futuras)</option>
+                    <option value="en_curso">🟢 En curso</option>
+                    <option value="finalizado">⚫ Finalizadas</option>
+                </select>
+            </div>
+            <div><button id="clearGeneralesFilters" class="btn-filter"><i class="fas fa-eraser"></i> Limpiar</button></div>
+        </div>
+        <div class="activities-table-wrapper">
+            <table class="activities-table">
+                <thead><tr><th>Título</th><th>Categoría</th><th>Dirigido a</th><th>Fecha</th><th>Hora</th><th>Ponente</th><th>Sede</th><th>Estado</th><th>Interesados</th><th>Acciones</th></tr></thead>
+                <tbody id="generalesTableBody">...</tbody>
+            </table>
+        </div>
+        <div class="pagination" id="generalesPagination"></div>
+    </div>
+
+    <!-- USUARIOS (superadmin) -->
+    {% if current_user.role and current_user.role.name == 'superadmin' %}
+    <div id="main-tab-usuarios" class="tab-content-pane">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="fas fa-users"></i> Usuarios registrados</h2>
+            <div>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createAdminModal"><i class="fas fa-user-plus"></i> Nuevo admin</button>
+                <button class="btn btn-success btn-sm" id="refreshUsersBtn"><i class="fas fa-sync-alt"></i> Actualizar</button>
+            </div>
+        </div>
+        <div class="users-table-wrapper">
+            <table class="users-table">
+                <thead><tr><th>ID</th><th>Matrícula</th><th>Nombre</th><th>Email</th><th>Teléfono</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
+                <tbody id="usersTableBody">...</tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- NOTIFICACIONES (superadmin) -->
+    <div id="main-tab-notificaciones" class="tab-content-pane">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2><i class="fas fa-bell"></i> Notificaciones del sistema</h2>
+            <button id="marcarTodasLeidasBtn" class="btn-marcar-todas"><i class="fas fa-check-double"></i> Marcar todas como leídas</button>
+        </div>
+        <div id="notificacionesContainer" class="notificaciones-list">
+            <div class="text-center p-5">Cargando notificaciones...</div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- MODALES -->
+<div id="deleteModal" class="modal fade" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Confirmar eliminación</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p id="deleteMessage">¿Estás seguro?</p></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" id="confirmDeleteBtn" class="btn btn-danger">Eliminar</button></div></div></div></div>
+<div class="modal fade" id="interesadosModal" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Estudiantes interesados</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><p><strong>Actividad:</strong> <span id="interesadosActividadTitulo"></span></p><p><strong>Total:</strong> <span id="interesadosTotal"></span></p><div class="table-responsive"><table class="table table-sm table-bordered"><thead><tr><th>Matrícula</th><th>Nombre</th><th>Email</th><th>Teléfono</th></tr></thead><tbody id="interesadosList"></tbody></table></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button></div></div></div></div>
+<div class="modal fade" id="editUserModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Editar usuario</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="editUserForm"><input type="hidden" id="editUserId"><div class="mb-3"><label>Nombre</label><input type="text" id="editUsername" class="form-control" required></div><div class="mb-3"><label>Email</label><input type="email" id="editEmail" class="form-control" required></div><div class="mb-3"><label>Teléfono</label><input type="tel" id="editPhone" class="form-control"></div><div class="mb-3"><label>Rol</label><select id="editRole" class="form-select"><option value="estudiante">Estudiante</option><option value="admin">Admin</option><option value="superadmin">Superadmin</option></select></div><div class="mb-3"><label>Nueva contraseña</label><input type="password" id="editPassword" class="form-control"></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" id="saveUserChangesBtn" class="btn btn-success">Guardar</button></div></div></div></div>
+<div class="modal fade" id="createAdminModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Crear administrador</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><form id="createAdminForm"><div class="mb-3"><label>Nombre</label><input type="text" id="newAdminName" class="form-control" required></div><div class="mb-3"><label>Email</label><input type="email" id="newAdminEmail" class="form-control" required></div><div class="mb-3"><label>Teléfono</label><input type="tel" id="newAdminPhone" class="form-control"></div><div class="mb-3"><label>Contraseña</label><input type="password" id="newAdminPassword" class="form-control" required minlength="6"></div></form></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" id="createAdminBtn" class="btn btn-primary">Crear</button></div></div></div></div>
+<div class="modal fade quickview-modal" id="quickviewModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-info text-white"><h5 class="modal-title">Vista rápida</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="quickviewBody"></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button><a href="#" id="quickviewEditLink" class="btn btn-primary">Editar</a></div></div></div></div>
+
+<!-- Modal de confirmación genérico -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmModalMessage">
+                ¿Estás seguro de realizar esta acción?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" id="confirmModalOkBtn">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ==================== FUNCIONES MEJORADAS ====================
+function confirmAction(message, title = 'Confirmar acción', onConfirm) {
+    const modalEl = document.getElementById('confirmModal');
+    if (!modalEl) {
+        if (confirm(message)) onConfirm();
+        return;
+    }
+    const modal = new bootstrap.Modal(modalEl);
+    document.getElementById('confirmModalTitle').innerText = title;
+    document.getElementById('confirmModalMessage').innerHTML = message;
+    const okBtn = document.getElementById('confirmModalOkBtn');
+    const newOkBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    newOkBtn.addEventListener('click', () => {
+        modal.hide();
+        if (onConfirm) onConfirm();
+    });
+    modal.show();
+}
+
+function showToast(message, type = 'success') {
+    if (typeof window.showToast === 'function') {
+        window.showToast(message, type);
+    } else {
+        console.warn('showToast global no disponible, usando alert');
+        alert(message);
+    }
+}
+
+// ==================== KPI ====================
+async function loadKPI() {
+    const container = document.getElementById('kpiContainer');
+    try {
+        const res = await fetch('/admin/api/stats');
+        if (!res.ok) throw new Error();
+        const stats = await res.json();
+        container.innerHTML = `
+            <div class="kpi-card"><div class="kpi-title">Total actividades</div><div class="kpi-value">${stats.total_actividades}</div><div class="kpi-sub">Jornada: ${stats.total_jornada} | Generales: ${stats.total_extra}</div></div>
+            <div class="kpi-card"><div class="kpi-title">Usuarios registrados</div><div class="kpi-value">${stats.total_usuarios}</div><div class="kpi-sub">En plataforma</div></div>
+            <div class="kpi-card"><div class="kpi-title">Más interés</div>${stats.actividad_top ? `<div class="kpi-value">${stats.actividad_top.total}</div><div class="kpi-sub"><a href="/detalle/${stats.actividad_top.id}">${escapeHtml(stats.actividad_top.title)}</a></div>` : `<div class="kpi-value">0</div><div class="kpi-sub">Sin registros</div>`}</div>
+            <div class="kpi-card"><div class="kpi-title">Próximas actividades</div><div class="kpi-value">${stats.proximas_actividades}</div><div class="kpi-sub">A partir de hoy</div></div>
+        `;
+    } catch(e) { container.innerHTML = '<div class="alert alert-warning">Error</div>'; }
+}
+
+// ==================== GESTIÓN DE PESTAÑAS ====================
+document.querySelectorAll('.main-tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tabId = btn.getAttribute('data-main-tab');
+        document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.tab-content-pane').forEach(pane => pane.classList.remove('active'));
+        document.getElementById(`main-tab-${tabId}`).classList.add('active');
+        if (tabId === 'jornada') cargarJornada();
+        else if (tabId === 'generales') cargarGenerales();
+        else if (tabId === 'usuarios' && typeof loadUsers === 'function') loadUsers();
+        else if (tabId === 'notificaciones' && typeof cargarNotificaciones === 'function') cargarNotificaciones();
+    });
+});
+
+// ==================== VARIABLES ====================
+let allActividades = [];
+let jornadaActividades = [];
+let generalesActividades = [];
+
+let jornadaFiltroDia = 'todos';
+let jornadaSearch = '', jornadaCat = '', jornadaCareer = '';
+let jornadaEstado = '';
+let jornadaPage = 1, jornadaTotalPages = 1;
+
+let generalesSearch = '', generalesCat = '', generalesCareer = '';
+let anioGenerales = '', mesGenerales = '', diaGenerales = '';
+let estadoGenerales = '';
+let generalesPage = 1, generalesTotalPages = 1;
+
+// ==================== UTILIDADES ====================
+function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => m==='&'?'&amp;':m==='<'?'&lt;':'&gt;');
+}
+function escapeJsString(str) {
+    if (!str) return '';
+    return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+}
+
+function obtenerDiaCorrecto(fechaStr) {
+    if (!fechaStr) return '—';
+    try {
+        const fecha = new Date(fechaStr + 'T12:00:00');
+        const dias = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        return dias[fecha.getDay()];
+    } catch(e) { return '—'; }
+}
+
+function timeToMinutes(timeStr) {
+    if (!timeStr) return 0;
+    const [h, m] = timeStr.split(':');
+    return parseInt(h) * 60 + parseInt(m);
+}
+
+function obtenerEstadoActividad(act) {
+    if (!act.date || !act.start_time || !act.end_time) return 'desconocido';
+    try {
+        const ahora = new Date();
+        const fechaStr = act.date;
+        const startMin = timeToMinutes(act.start_time);
+        const endMin = timeToMinutes(act.end_time);
+        const hoyStr = ahora.toISOString().slice(0,10);
+        if (fechaStr > hoyStr) return 'activo';
+        if (fechaStr < hoyStr) return 'finalizado';
+        const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+        if (minutosActuales < startMin) return 'activo';
+        if (minutosActuales >= startMin && minutosActuales < endMin) return 'en_curso';
+        return 'finalizado';
+    } catch(e) {
+        return 'desconocido';
+    }
+}
+
+async function loadActividadesGlobal() {
+    try {
+        const res = await fetch('/api/actividades');
+        if (!res.ok) throw new Error();
+        allActividades = await res.json();
+        jornadaActividades = allActividades.filter(a => a.event_type === 'jornada');
+        generalesActividades = allActividades.filter(a => a.event_type === 'extra');
+        cargarOpcionesAnio();
+        cargarOpcionesMes();
+        actualizarDiasSegunMesYAnio();
+        cargarJornada();
+        cargarGenerales();
+    } catch(e) { showToast('Error al cargar actividades', 'error'); }
+}
+
+function cargarOpcionesAnio() {
+    const anios = new Set();
+    generalesActividades.forEach(a => { if (a.date) anios.add(a.date.slice(0,4)); });
+    const selectAnio = document.getElementById('anioGenerales');
+    const anioActual = new Date().getFullYear().toString();
+    selectAnio.innerHTML = '<option value="">Todos</option>';
+    const aniosOrdenados = [...anios].sort().reverse();
+    aniosOrdenados.forEach(anio => {
+        const option = document.createElement('option');
+        option.value = anio;
+        option.textContent = anio;
+        selectAnio.appendChild(option);
+    });
+    if (anios.has(anioActual)) { selectAnio.value = anioActual; anioGenerales = anioActual; }
+    else if (aniosOrdenados.length > 0) { selectAnio.value = aniosOrdenados[0]; anioGenerales = aniosOrdenados[0]; }
+}
+function cargarOpcionesMes() {
+    const selectMes = document.getElementById('mesGenerales');
+    const opciones = [
+        {value:'01', label:'Enero'},{value:'02', label:'Febrero'},{value:'03', label:'Marzo'},
+        {value:'04', label:'Abril'},{value:'05', label:'Mayo'},{value:'06', label:'Junio'},
+        {value:'07', label:'Julio'},{value:'08', label:'Agosto'},{value:'09', label:'Septiembre'},
+        {value:'10', label:'Octubre'},{value:'11', label:'Noviembre'},{value:'12', label:'Diciembre'}
+    ];
+    selectMes.innerHTML = '<option value="">Todos</option>';
+    opciones.forEach(m => { const option = document.createElement('option'); option.value = m.value; option.textContent = m.label; selectMes.appendChild(option); });
+}
+function actualizarDiasSegunMesYAnio() {
+    const anio = document.getElementById('anioGenerales').value;
+    const mes = document.getElementById('mesGenerales').value;
+    const selectDia = document.getElementById('diaGenerales');
+    const valorActual = selectDia.value;
+    selectDia.innerHTML = '<option value="">Todos</option>';
+    if (!anio || !mes) {
+        for (let i = 1; i <= 31; i++) { const opt = document.createElement('option'); opt.value = i.toString().padStart(2,'0'); opt.textContent = i; selectDia.appendChild(opt); }
+    } else {
+        const ultimoDia = new Date(parseInt(anio), parseInt(mes), 0).getDate();
+        for (let i = 1; i <= ultimoDia; i++) { const opt = document.createElement('option'); opt.value = i.toString().padStart(2,'0'); opt.textContent = i; selectDia.appendChild(opt); }
+    }
+    if (valorActual && [...selectDia.options].some(opt => opt.value === valorActual)) selectDia.value = valorActual;
+    else selectDia.value = '';
+    diaGenerales = selectDia.value;
+}
+
+function cargarJornada() {
+    let filtered = [...jornadaActividades];
+    if (jornadaFiltroDia !== 'todos') {
+        filtered = filtered.filter(a => {
+            const diaReal = obtenerDiaCorrecto(a.date).toLowerCase();
+            return diaReal === jornadaFiltroDia;
+        });
+    }
+    if (jornadaSearch) {
+        const term = jornadaSearch.toLowerCase();
+        filtered = filtered.filter(a => a.title.toLowerCase().includes(term) || (a.speaker && a.speaker.toLowerCase().includes(term)));
+    }
+    if (jornadaCat) filtered = filtered.filter(a => a.category === jornadaCat);
+    if (jornadaCareer) filtered = filtered.filter(a => a.career === jornadaCareer);
+    if (jornadaEstado) filtered = filtered.filter(a => obtenerEstadoActividad(a) === jornadaEstado);
+    filtered.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+    jornadaTotalPages = Math.ceil(filtered.length / 10);
+    if (jornadaPage > jornadaTotalPages) jornadaPage = 1;
+    const start = (jornadaPage-1)*10;
+    const pageItems = filtered.slice(start, start+10);
+    renderJornadaTable(pageItems);
+    renderPagination('jornada', jornadaPage, jornadaTotalPages, (page) => { jornadaPage = page; cargarJornada(); });
+}
+
+function renderJornadaTable(actividades) {
+    const tbody = document.getElementById('jornadaTableBody');
+    if (actividades.length === 0) { tbody.innerHTML = '<tr><td colspan="11" class="text-center">No hay actividades</td></tr>'; return; }
+    let html = '';
+    actividades.forEach(act => {
+        const estado = obtenerEstadoActividad(act);
+        let estadoHtml = '';
+        if (estado === 'activo') estadoHtml = '<span class="status-badge status-active">🔵 Activo</span>';
+        else if (estado === 'en_curso') estadoHtml = '<span class="status-badge status-encurso">🟢 En curso</span>';
+        else estadoHtml = '<span class="status-badge status-finished">⚫ Finalizado</span>';
+        
+        const tieneQR = act.qr_token ? true : false;
+        const esFutura = (estado === 'activo');
+        const botonGenerarQR = (esFutura && !tieneQR) ? `<button class="action-icon qr" onclick="generarQR(${act.id})" title="Generar código QR"><i class="fas fa-qrcode"></i></button>` : '';
+        const botonVerQR = tieneQR ? `<button class="action-icon qr-view" onclick="verQR(${act.id})" title="Ver código QR (PDF)"><i class="fas fa-eye"></i></button>` : '';
+        const diaCorrecto = obtenerDiaCorrecto(act.date);
+        html += `
+            <tr data-id="${act.id}">
+                <td><div class="fw-bold">${escapeHtml(act.title)}</div></td>
+                <td><span class="badge-category">${escapeHtml(act.category)||'—'}</span></td>
+                <td>${escapeHtml(act.career)||'—'}</td>
+                <td>${diaCorrecto}</td>
+                <td>${act.start_time}${act.end_time ? ' - '+act.end_time : ''}</td>
+                <td>${escapeHtml(act.speaker)||'—'}</td>
+                <td>${escapeHtml(act.venue)||'—'}</td>
+                <td>${estadoHtml}</td>
+                <td class="text-center"><button class="btn btn-sm btn-outline-primary" onclick="verInteresados(${act.id}, '${escapeJsString(act.title)}')"><i class="fas fa-users"></i> Ver</button></td>
+                <td class="actions-cell">
+                    <button class="action-icon quickview" onclick="quickview(${act.id})" title="Vista rápida"><i class="fas fa-eye"></i></button>
+                    <a href="/admin/editar/${act.id}" class="action-icon edit" title="Editar"><i class="fas fa-edit"></i></a>
+                    <button class="action-icon delete" data-id="${act.id}" data-title="${escapeHtml(act.title)}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    ${botonGenerarQR}
+                    ${botonVerQR}
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+    attachDeleteButtons();
+}
+
+function cargarGenerales() {
+    let filtered = [...generalesActividades];
+    if (generalesSearch) {
+        const term = generalesSearch.toLowerCase();
+        filtered = filtered.filter(a => a.title.toLowerCase().includes(term) || (a.speaker && a.speaker.toLowerCase().includes(term)));
+    }
+    if (generalesCat) filtered = filtered.filter(a => a.category === generalesCat);
+    if (generalesCareer) filtered = filtered.filter(a => a.career === generalesCareer);
+    if (anioGenerales) filtered = filtered.filter(a => a.date && a.date.startsWith(anioGenerales));
+    if (mesGenerales) filtered = filtered.filter(a => a.date && a.date.slice(5,7) === mesGenerales);
+    if (diaGenerales) filtered = filtered.filter(a => a.date && a.date.slice(8,10) === diaGenerales);
+    if (estadoGenerales) filtered = filtered.filter(a => obtenerEstadoActividad(a) === estadoGenerales);
+    filtered.sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+    generalesTotalPages = Math.ceil(filtered.length / 10);
+    if (generalesPage > generalesTotalPages) generalesPage = 1;
+    const start = (generalesPage-1)*10;
+    const pageItems = filtered.slice(start, start+10);
+    renderGeneralesTable(pageItems);
+    renderPagination('generales', generalesPage, generalesTotalPages, (page) => { generalesPage = page; cargarGenerales(); });
+}
+
+function renderGeneralesTable(actividades) {
+    const tbody = document.getElementById('generalesTableBody');
+    if (actividades.length === 0) { tbody.innerHTML = '<tr><td colspan="11" class="text-center">No hay eventos</td></tr>'; return; }
+    let html = '';
+    actividades.forEach(act => {
+        const estado = obtenerEstadoActividad(act);
+        let estadoHtml = '';
+        if (estado === 'activo') estadoHtml = '<span class="status-badge status-active">🔵 Activo</span>';
+        else if (estado === 'en_curso') estadoHtml = '<span class="status-badge status-encurso">🟢 En curso</span>';
+        else estadoHtml = '<span class="status-badge status-finished">⚫ Finalizado</span>';
+        
+        const tieneQR = act.qr_token ? true : false;
+        const esFutura = (estado === 'activo');
+        const botonGenerarQR = (esFutura && !tieneQR) ? `<button class="action-icon qr" onclick="generarQR(${act.id})" title="Generar código QR"><i class="fas fa-qrcode"></i></button>` : '';
+        const botonVerQR = tieneQR ? `<button class="action-icon qr-view" onclick="verQR(${act.id})" title="Ver código QR (PDF)"><i class="fas fa-eye"></i></button>` : '';
+        html += `
+            <tr data-id="${act.id}">
+                <td><div class="fw-bold">${escapeHtml(act.title)}</div></td>
+                <td><span class="badge-category">${escapeHtml(act.category)||'—'}</span></td>
+                <td>${escapeHtml(act.career)||'—'}</td>
+                <td>${act.date || '—'}</td>
+                <td>${act.start_time}${act.end_time ? ' - '+act.end_time : ''}</td>
+                <td>${escapeHtml(act.speaker)||'—'}</td>
+                <td>${escapeHtml(act.venue)||'—'}</td>
+                <td>${estadoHtml}</td>
+                <td class="text-center"><button class="btn btn-sm btn-outline-primary" onclick="verInteresados(${act.id}, '${escapeJsString(act.title)}')"><i class="fas fa-users"></i> Ver</button></td>
+                <td class="actions-cell">
+                    <button class="action-icon quickview" onclick="quickview(${act.id})" title="Vista rápida"><i class="fas fa-eye"></i></button>
+                    <a href="/admin/editar/${act.id}" class="action-icon edit" title="Editar"><i class="fas fa-edit"></i></a>
+                    <button class="action-icon delete" data-id="${act.id}" data-title="${escapeHtml(act.title)}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                    ${botonGenerarQR}
+                    ${botonVerQR}
+                </td>
+            </tr>
+        `;
+    });
+    tbody.innerHTML = html;
+    attachDeleteButtons();
+}
+
+function renderPagination(tipo, current, total, callback) {
+    const container = document.getElementById(`${tipo}Pagination`);
+    if (!container) return;
+    if (total <= 1) { container.innerHTML = ''; return; }
+    let html = `<button ${current===1?'disabled':''} onclick="window.${tipo}Page=1; window.cargar${tipo.charAt(0).toUpperCase()+tipo.slice(1)}()">«</button>
+                <button ${current===1?'disabled':''} onclick="window.${tipo}Page=${current-1}; window.cargar${tipo.charAt(0).toUpperCase()+tipo.slice(1)}()">‹</button>`;
+    for (let i=Math.max(1,current-2); i<=Math.min(total,current+2); i++) {
+        html += `<button class="${i===current?'active':''}" onclick="window.${tipo}Page=${i}; window.cargar${tipo.charAt(0).toUpperCase()+tipo.slice(1)}()">${i}</button>`;
+    }
+    html += `<button ${current===total?'disabled':''} onclick="window.${tipo}Page=${current+1}; window.cargar${tipo.charAt(0).toUpperCase()+tipo.slice(1)}()">›</button>
+             <button ${current===total?'disabled':''} onclick="window.${tipo}Page=${total}; window.cargar${tipo.charAt(0).toUpperCase()+tipo.slice(1)}()">»</button>`;
+    container.innerHTML = html;
+}
+
+function initJornadaFilters() {
+    const search = document.getElementById('searchJornada');
+    const cat = document.getElementById('catJornada');
+    const career = document.getElementById('careerJornada');
+    const estadoSelect = document.getElementById('estadoJornada');
+    const clear = document.getElementById('clearJornadaFilters');
+    const diaBtns = document.querySelectorAll('[data-jornada-dia]');
+    diaBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            diaBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            jornadaFiltroDia = btn.getAttribute('data-jornada-dia');
+            jornadaPage = 1;
+            cargarJornada();
+        });
+    });
+    const apply = () => {
+        jornadaSearch = search.value;
+        jornadaCat = cat.value;
+        jornadaCareer = career.value;
+        jornadaEstado = estadoSelect.value;
+        jornadaPage = 1;
+        cargarJornada();
+    };
+    search.addEventListener('input', apply);
+    cat.addEventListener('change', apply);
+    career.addEventListener('change', apply);
+    estadoSelect.addEventListener('change', apply);
+    clear.addEventListener('click', () => {
+        search.value = ''; cat.value = ''; career.value = ''; estadoSelect.value = '';
+        jornadaSearch = ''; jornadaCat = ''; jornadaCareer = ''; jornadaEstado = '';
+        jornadaPage = 1;
+        cargarJornada();
+    });
+}
+
+function initGeneralesFilters() {
+    const search = document.getElementById('searchGenerales');
+    const cat = document.getElementById('catGenerales');
+    const career = document.getElementById('careerGenerales');
+    const anioSelect = document.getElementById('anioGenerales');
+    const mesSelect = document.getElementById('mesGenerales');
+    const diaSelect = document.getElementById('diaGenerales');
+    const estadoSelect = document.getElementById('estadoGenerales');
+    const clear = document.getElementById('clearGeneralesFilters');
+    const apply = () => {
+        generalesSearch = search.value;
+        generalesCat = cat.value;
+        generalesCareer = career.value;
+        anioGenerales = anioSelect.value;
+        mesGenerales = mesSelect.value;
+        diaGenerales = diaSelect.value;
+        estadoGenerales = estadoSelect.value;
+        generalesPage = 1;
+        cargarGenerales();
+    };
+    const actualizarDias = () => {
+        actualizarDiasSegunMesYAnio();
+        apply();
+    };
+    search.addEventListener('input', apply);
+    cat.addEventListener('change', apply);
+    career.addEventListener('change', apply);
+    anioSelect.addEventListener('change', actualizarDias);
+    mesSelect.addEventListener('change', actualizarDias);
+    diaSelect.addEventListener('change', apply);
+    estadoSelect.addEventListener('change', apply);
+    clear.addEventListener('click', () => {
+        search.value = ''; cat.value = ''; career.value = ''; anioSelect.value = ''; mesSelect.value = ''; estadoSelect.value = '';
+        actualizarDiasSegunMesYAnio();
+        diaSelect.value = '';
+        generalesSearch = ''; generalesCat = ''; generalesCareer = '';
+        anioGenerales = ''; mesGenerales = ''; diaGenerales = ''; estadoGenerales = '';
+        generalesPage = 1;
+        cargarGenerales();
+    });
+}
+
+// ==================== EXPORTACIONES ====================
+document.getElementById('exportJornadaBtn')?.addEventListener('click', () => {
+    let dia = jornadaFiltroDia;
+    let url = `/admin/exportar/jornada?dia=${dia}`;
+    window.open(url, '_blank');
+});
+document.getElementById('exportGeneralesUnificadoBtn')?.addEventListener('click', () => {
+    const params = new URLSearchParams();
+    if (generalesSearch) params.append('search', generalesSearch);
+    if (generalesCat) params.append('category', generalesCat);
+    if (generalesCareer) params.append('career', generalesCareer);
+    if (anioGenerales) params.append('anio', anioGenerales);
+    if (mesGenerales) params.append('mes', mesGenerales);
+    if (diaGenerales) params.append('dia', diaGenerales);
+    if (estadoGenerales) params.append('estado', estadoGenerales);
+    const url = `/admin/exportar/generales?${params.toString()}`;
+    window.open(url, '_blank');
+});
+
+// ==================== QR y ASISTENCIAS ====================
+function generarQR(actividadId) {
+    confirmAction(
+        '¿Generar código QR para esta actividad?<br><small class="text-muted">Solo se puede generar una vez.</small>',
+        'Generar código QR',
+        () => {
+            fetch(`/admin/actividad/${actividadId}/qr/generar`, { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) showToast(data.error, 'error');
+                    else { 
+                        showToast(data.message, 'success'); 
+                        cargarJornada(); 
+                        cargarGenerales(); 
+                    }
+                })
+                .catch(err => { console.error(err); showToast('Error al generar QR', 'error'); });
+        }
+    );
+}
+function verQR(actividadId) { window.open(`/admin/actividad/${actividadId}/qr/pdf`, '_blank'); }
+
+// ==================== ACCIONES DE TABLA ====================
+function attachDeleteButtons() {
+    document.querySelectorAll('.delete').forEach(btn => {
+        btn.removeEventListener('click', btn._listener);
+        const listener = () => {
+            const id = btn.getAttribute('data-id');
+            const title = btn.getAttribute('data-title');
+            showDeleteModal(id, title);
+        };
+        btn.addEventListener('click', listener);
+        btn._listener = listener;
+    });
+}
+let deleteId = null;
+function showDeleteModal(id, title) {
+    deleteId = id;
+    document.getElementById('deleteMessage').innerHTML = `¿Eliminar "<strong>${escapeHtml(title)}</strong>"?`;
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+document.getElementById('confirmDeleteBtn')?.addEventListener('click', async () => {
+    if (!deleteId) return;
+    try {
+        const res = await fetch(`/admin/eliminar/${deleteId}`, { method: 'POST' });
+        if (res.ok) { showToast('Actividad eliminada', 'success'); loadActividadesGlobal(); loadKPI(); }
+        else showToast('Error', 'error');
+    } catch(e) { showToast('Error de red', 'error'); }
+    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
+    deleteId = null;
+});
+
+// ==================== VER INTERESADOS ====================
+window.verInteresados = async function(id, titulo) {
+    const modalEl = document.getElementById('interesadosModal');
+    if (!modalEl) { alert("Error: No se encontró el modal."); return; }
+    document.getElementById('interesadosActividadTitulo').innerText = titulo;
+    document.getElementById('interesadosTotal').innerText = 'Cargando...';
+    document.getElementById('interesadosList').innerHTML = '<tr><td colspan="4">Cargando...</td></tr>';
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+    try {
+        const res = await fetch(`/admin/api/actividad/${id}/interesados`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        document.getElementById('interesadosTotal').innerText = data.total;
+        if (data.estudiantes.length === 0) {
+            document.getElementById('interesadosList').innerHTML = '<tr><td colspan="4">No hay estudiantes interesados.</td></tr>';
+        } else {
+            let html = '';
+            data.estudiantes.forEach(est => {
+                html += `<tr>
+                    <td>${escapeHtml(est.student_id)}</td>
+                    <td>${escapeHtml(est.username)}</td>
+                    <td>${escapeHtml(est.email)}</td>
+                    <td>${escapeHtml(est.phone||'')}</td>
+                </tr>`;
+            });
+            document.getElementById('interesadosList').innerHTML = html;
+        }
+    } catch(e) {
+        console.error(e);
+        document.getElementById('interesadosTotal').innerText = 'Error';
+        document.getElementById('interesadosList').innerHTML = `<tr><td colspan="4" class="text-danger">Error: ${e.message}</td></tr>`;
+    }
+};
+
+function quickview(id) {
+    const act = allActividades.find(a => a.id === id);
+    if (!act) return;
+    const modalBody = document.getElementById('quickviewBody');
+    modalBody.innerHTML = `
+        <div class="quickview-detail"><strong>Título:</strong> ${escapeHtml(act.title)}</div>
+        <div class="quickview-detail"><strong>Categoría:</strong> ${escapeHtml(act.category)||'—'}</div>
+        <div class="quickview-detail"><strong>Dirigido a:</strong> ${escapeHtml(act.career)||'—'}</div>
+        <div class="quickview-detail"><strong>Ponente:</strong> ${escapeHtml(act.speaker)||'—'}</div>
+        <div class="quickview-detail"><strong>Fecha/Hora:</strong> ${act.date || act.day} ${act.start_time} - ${act.end_time||''}</div>
+        <div class="quickview-detail"><strong>Sede:</strong> ${escapeHtml(act.venue)||'—'}</div>
+        <div class="quickview-detail"><strong>Descripción:</strong> ${escapeHtml(act.description)||'—'}</div>
+    `;
+    document.getElementById('quickviewEditLink').href = `/admin/editar/${id}`;
+    new bootstrap.Modal(document.getElementById('quickviewModal')).show();
+}
+
+// ==================== NOTIFICACIONES (superadmin) ====================
+{% if current_user.role and current_user.role.name == 'superadmin' %}
+async function cargarNotificaciones() {
+    const container = document.getElementById('notificacionesContainer');
+    container.innerHTML = '<div class="text-center p-5">Cargando notificaciones...</div>';
+    try {
+        const res = await fetch('/superadmin/api/notificaciones');
+        const notificaciones = await res.json();
+        if (notificaciones.length === 0) {
+            container.innerHTML = '<div class="text-center p-5"><i class="fas fa-bell-slash fa-3x text-muted mb-3"></i><p>No hay notificaciones recientes.</p></div>';
+            return;
+        }
+        let html = '';
+        notificaciones.forEach(notif => {
+            const claseNoLeida = notif.leida ? '' : 'no-leida';
+            const fecha = new Date(notif.timestamp).toLocaleString();
+            html += `
+                <div class="notificacion-item ${claseNoLeida}" data-id="${notif.id}">
+                    <div class="notificacion-contenido">
+                        <div class="notificacion-mensaje">${escapeHtml(notif.mensaje)}</div>
+                        <div class="notificacion-fecha">${fecha}</div>
+                    </div>
+                    <div class="notificacion-acciones">
+                        ${!notif.leida ? `<button class="marcar-leida" data-id="${notif.id}" title="Marcar como leída"><i class="fas fa-check"></i> Leída</button>` : ''}
+                    </div>
+                </div>
+            `;
+        });
+        container.innerHTML = html;
+        document.querySelectorAll('.marcar-leida').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const id = btn.getAttribute('data-id');
+                await marcarNotificacionLeida(id);
+                cargarNotificaciones();
+            });
+        });
+    } catch(e) {
+        console.error(e);
+        container.innerHTML = '<div class="text-center p-5 text-danger">Error al cargar notificaciones</div>';
+    }
+}
+
+async function marcarNotificacionLeida(id) {
+    try {
+        await fetch(`/superadmin/api/notificaciones/${id}/leer`, { method: 'POST' });
+    } catch(e) { console.error(e); }
+}
+
+document.getElementById('marcarTodasLeidasBtn')?.addEventListener('click', async () => {
+    try {
+        await fetch('/superadmin/api/notificaciones/marcar_todas', { method: 'POST' });
+        cargarNotificaciones();
+        showToast('Todas las notificaciones marcadas como leídas', 'success');
+    } catch(e) { showToast('Error', 'error'); }
+});
+{% endif %}
+
+// ==================== USUARIOS (superadmin) ====================
+{% if current_user.role and current_user.role.name == 'superadmin' %}
+const currentUserId = {{ current_user.id }};
+async function loadUsers() {
+    const tbody = document.getElementById('usersTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '<tr><td colspan="8">Cargando usuarios...</td></tr>';
+    try {
+        const res = await fetch('/superadmin/api/usuarios');
+        const users = await res.json();
+        if (users.length === 0) tbody.innerHTML = '<tr><td colspan="8">No hay usuarios registrados.</td></tr>';
+        else {
+            let html = '';
+            users.forEach(u => {
+                const statusClass = u.is_active ? 'user-status-active' : 'user-status-inactive';
+                const statusText = u.is_active ? 'Activo' : 'Inactivo';
+                const canToggle = (u.role_name !== 'superadmin') || (u.id === currentUserId);
+                const disabledAttr = !canToggle ? ' disabled' : '';
+                const titleTooltip = !canToggle ? (u.id === currentUserId ? 'No puedes desactivarte a ti mismo' : 'No puedes desactivar a otro superadministrador') : '';
+                html += `<tr>
+                    <td>${u.id}</td>
+                    <td>${escapeHtml(u.student_id)||'-'}</td>
+                    <td>${escapeHtml(u.username)||'-'}</td>
+                    <td>${escapeHtml(u.email)}</td>
+                    <td>${escapeHtml(u.phone)||'-'}</td>
+                    <td><span class="badge bg-secondary">${u.role_name}</span></td>
+                    <td><button class="user-status-toggle ${statusClass}" data-user-id="${u.id}" data-active="${u.is_active}"${disabledAttr} title="${titleTooltip}">${statusText}</button></td>
+                    <td><button class="action-icon edit" onclick="openEditModal(${u.id})"><i class="fas fa-edit"></i></button> <button class="action-icon delete" onclick="deleteUser(${u.id})"><i class="fas fa-trash-alt"></i></button></td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+            document.querySelectorAll('.user-status-toggle:not([disabled])').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+                    const userId = btn.getAttribute('data-user-id');
+                    const currentActive = btn.getAttribute('data-active') === 'true';
+                    const newActive = !currentActive;
+                    try {
+                        const res = await fetch(`/superadmin/api/usuario/${userId}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ is_active: newActive })
+                        });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showToast(`Usuario ${newActive ? 'activado' : 'desactivado'} correctamente`, 'success');
+                            loadUsers();
+                        } else {
+                            showToast(data.error || 'Error al actualizar estado', 'error');
+                        }
+                    } catch(e) { showToast('Error de conexión', 'error'); }
+                });
+            });
+        }
+    } catch(e) { tbody.innerHTML = '<tr><td colspan="8">Error al cargar usuarios</td></tr>'; }
+}
+
+window.openEditModal = async function(id) {
+    try {
+        const res = await fetch(`/superadmin/api/usuario/${id}`);
+        const user = await res.json();
+        document.getElementById('editUserId').value = user.id;
+        document.getElementById('editUsername').value = user.username||'';
+        document.getElementById('editEmail').value = user.email;
+        document.getElementById('editPhone').value = user.phone||'';
+        document.getElementById('editRole').value = user.role_name;
+        document.getElementById('editPassword').value = '';
+        new bootstrap.Modal(document.getElementById('editUserModal')).show();
+    } catch(e) { alert('Error al cargar datos'); }
+};
+document.getElementById('saveUserChangesBtn')?.addEventListener('click', async () => {
+    const id = document.getElementById('editUserId').value;
+    const payload = {
+        username: document.getElementById('editUsername').value,
+        email: document.getElementById('editEmail').value,
+        phone: document.getElementById('editPhone').value,
+        role: document.getElementById('editRole').value,
+        new_password: document.getElementById('editPassword').value
+    };
+    try {
+        const res = await fetch(`/superadmin/api/usuario/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast('Usuario actualizado', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            loadUsers();
+        } else {
+            showToast(data.error || 'Error al actualizar', 'error');
+        }
+    } catch(e) { showToast('Error', 'error'); }
+});
+window.deleteUser = async function(id) {
+    confirmAction(
+        '¿Eliminar este usuario?<br><strong>Esta acción no se puede deshacer.</strong>',
+        'Eliminar usuario',
+        async () => {
+            try {
+                const res = await fetch(`/superadmin/api/usuario/${id}`, { method: 'DELETE' });
+                const data = await res.json();
+                if (res.ok) {
+                    showToast(data.message, 'success');
+                    loadUsers();
+                } else {
+                    showToast(data.error || 'Error al eliminar', 'error');
+                }
+            } catch(e) { showToast('Error', 'error'); }
+        }
+    );
+};
+document.getElementById('createAdminBtn')?.addEventListener('click', async () => {
+    const name = document.getElementById('newAdminName').value, email = document.getElementById('newAdminEmail').value, phone = document.getElementById('newAdminPhone').value, pass = document.getElementById('newAdminPassword').value;
+    if (!name || !email || !pass || pass.length<6) { alert('Datos inválidos'); return; }
+    try {
+        const res = await fetch('/superadmin/api/crear_admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: name, email: email, phone: phone, password: pass })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(data.message, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('createAdminModal')).hide();
+            loadUsers();
+            document.getElementById('createAdminForm').reset();
+        } else {
+            showToast(data.error || 'Error al crear', 'error');
+        }
+    } catch(e) { showToast('Error', 'error'); }
+});
+document.getElementById('refreshUsersBtn')?.addEventListener('click', loadUsers);
+{% endif %}
+
+// ==================== INICIALIZACIÓN ====================
+document.addEventListener('DOMContentLoaded', () => {
+    loadKPI();
+    loadActividadesGlobal();
+    initJornadaFilters();
+    initGeneralesFilters();
+    window.cargarJornada = cargarJornada;
+    window.cargarGenerales = cargarGenerales;
+    window.jornadaPage = jornadaPage;
+    window.generalesPage = generalesPage;
+});
+</script>
+{% endblock %}

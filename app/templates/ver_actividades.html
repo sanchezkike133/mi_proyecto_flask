@@ -1,0 +1,675 @@
+{% extends "base.html" %}
+
+{% block title %}{{ current_jornada }}va Jornada Académica y Cultural {{ current_jornada_year }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Contenedor principal */
+    .activities-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+
+    /* Cabecera */
+    .hero-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        background: linear-gradient(135deg, #e8f5e9 0%, #ffffff 100%);
+        padding: 2rem;
+        border-radius: 2rem;
+    }
+    .hero-header h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #008000;
+        margin-bottom: 0.5rem;
+    }
+    .hero-header p {
+        font-size: 1.1rem;
+        color: #475569;
+    }
+
+    /* Barra de filtros */
+    .filter-bar {
+        background: white;
+        border-radius: 1.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+    .filter-group {
+        flex: 1;
+        min-width: 160px;
+    }
+    .filter-group label {
+        display: block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #64748b;
+        margin-bottom: 0.3rem;
+    }
+    .filter-group input,
+    .filter-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        font-size: 0.9rem;
+        transition: all 0.2s;
+    }
+    .filter-group input:focus,
+    .filter-group select:focus {
+        border-color: #008000;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0,128,0,0.1);
+    }
+    .btn-clear {
+        background: #f1f5f9;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-clear:hover {
+        background: #e2e8f0;
+    }
+
+    /* Pestañas */
+    .tabs {
+        display: flex;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    .tab-btn {
+        background: transparent;
+        border: none;
+        padding: 0.75rem 1.8rem;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #64748b;
+        cursor: pointer;
+        border-radius: 2rem 2rem 0 0;
+        transition: all 0.2s;
+        position: relative;
+    }
+    .tab-btn.active {
+        color: #008000;
+        background: #f0fdf4;
+    }
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        width: 100%;
+        height: 3px;
+        background: #008000;
+        border-radius: 3px 3px 0 0;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Grid de tarjetas */
+    .activities-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 1.8rem;
+    }
+
+    /* Tarjeta individual */
+    .activity-card {
+        background: white;
+        border-radius: 1.5rem;
+        overflow: hidden;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        transition: transform 0.25s, box-shadow 0.25s;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+    .activity-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 20px 30px -12px rgba(0,128,0,0.2);
+    }
+    .card-img {
+        position: relative;
+        height: 190px;
+        overflow: hidden;
+        background: #e8f5e9;
+    }
+    .card-img img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+    .activity-card:hover .card-img img {
+        transform: scale(1.05);
+    }
+    .card-badge {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        background: #008000;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 2rem;
+        font-size: 0.7rem;
+        font-weight: 600;
+        z-index: 2;
+        backdrop-filter: blur(2px);
+    }
+    .card-badge.extra {
+        background: #f97316;
+    }
+    .badge-proxima {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: #f4d35e;
+        color: #1e293b;
+        padding: 4px 12px;
+        border-radius: 2rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        z-index: 2;
+    }
+    .card-day {
+        position: absolute;
+        bottom: 12px;
+        right: 12px;
+        background: rgba(0,0,0,0.7);
+        backdrop-filter: blur(4px);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 2rem;
+        font-size: 0.7rem;
+        font-weight: 500;
+    }
+    .card-content {
+        padding: 1.2rem;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    .card-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.6rem;
+        color: #0f172a;
+    }
+    .card-info {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        font-size: 0.8rem;
+        color: #475569;
+        margin-bottom: 0.8rem;
+        border-bottom: 1px dashed #e2e8f0;
+        padding-bottom: 0.6rem;
+    }
+    .card-info i {
+        width: 18px;
+        color: #008000;
+    }
+    .card-description {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.5;
+        margin-bottom: 1rem;
+        flex: 1;
+    }
+    .card-actions {
+        display: flex;
+        gap: 0.8rem;
+        margin-top: 0.5rem;
+    }
+    .btn-detail {
+        background: #f0fdf4;
+        color: #008000;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: 0.2s;
+        flex: 1;
+        justify-content: center;
+    }
+    .btn-detail:hover {
+        background: #008000;
+        color: white;
+    }
+    .btn-interest {
+        background: white;
+        border: 1px solid #cbd5e1;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 600;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex: 1;
+        justify-content: center;
+    }
+    .btn-interest.saved {
+        background: #008000;
+        border-color: #008000;
+        color: white;
+    }
+    .btn-interest:hover {
+        background: #e8f5e9;
+        border-color: #008000;
+    }
+
+    /* Información de resultados y orden */
+    .result-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e2e8f0;
+        font-size: 0.85rem;
+        color: #475569;
+    }
+    .btn-sort {
+        background: #e8f5e9;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 2rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .btn-sort:hover {
+        background: #c8e6c9;
+    }
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 1.5rem;
+        margin: 1rem 0;
+        color: #64748b;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="activities-container">
+    <div class="hero-header">
+        <h1>📅 {{ current_jornada }}va Jornada Académica y Cultural {{ current_jornada_year }}</h1>
+        <p>Descubre las conferencias, talleres y eventos especiales que tenemos para ti</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filter-bar">
+        <div class="filter-group">
+            <label><i class="fas fa-search"></i> Buscar</label>
+            <input type="text" id="searchInput" placeholder="Título o ponente...">
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-calendar-day"></i> Día</label>
+            <select id="dayFilter">
+                <option value="">Todos</option>
+                <option value="lunes">Lunes</option>
+                <option value="martes">Martes</option>
+                <option value="miercoles">Miércoles</option>
+                <option value="jueves">Jueves</option>
+                <option value="viernes">Viernes</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label><i class="fas fa-tag"></i> Categoría</label>
+            <select id="categoryFilter">
+                <option value="">Todas</option>
+                <!-- Las opciones se cargarán dinámicamente desde las actividades -->
+            </select>
+        </div>
+        <div>
+            <button id="clearFiltersBtn" class="btn-clear"><i class="fas fa-eraser"></i> Limpiar</button>
+        </div>
+    </div>
+
+    <!-- Pestañas -->
+    <div class="tabs">
+        <button class="tab-btn active" data-type="jornada">📅 Jornada Académica</button>
+        <button class="tab-btn" data-type="extra">🎓 Eventos Especiales</button>
+    </div>
+
+    <!-- Contenedores de tarjetas -->
+    <div id="tab-jornada" class="tab-content active">
+        <div id="jornadaGrid" class="activities-grid"></div>
+    </div>
+    <div id="tab-extra" class="tab-content">
+        <div id="extraGrid" class="activities-grid"></div>
+    </div>
+
+    <div class="result-info">
+        <span id="resultCount"></span>
+        <button id="sortToggleBtn" class="btn-sort"><i class="fas fa-sort-amount-down-alt"></i> Orden: Más cercanas primero</button>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ---------- VARIABLES GLOBALES ----------
+    let allActivities = [];      // Todas las actividades desde la API
+    let savedIds = [];           // IDs guardados en el servidor (para estudiantes)
+    let currentType = 'jornada';
+    let searchTerm = '', dayFilter = '', categoryFilter = '';
+    let sortAscending = true;    // true = más cercanas primero
+
+    // Verificar si el usuario actual es estudiante (desde el backend)
+    const isEstudiante = {% if current_user.is_authenticated and current_user.role and current_user.role.name == 'estudiante' %}true{% else %}false{% endif %};
+
+    // ---------- FUNCIONES PARA AGENDA EN SERVIDOR (RUTAS CORREGIDAS) ----------
+    async function loadAgendaFromServer() {
+        if (!isEstudiante) return;
+        try {
+            const res = await fetch('/agenda/api/agenda');
+            if (!res.ok) throw new Error('Error al cargar agenda');
+            const data = await res.json();
+            savedIds = data.saved_ids || [];
+        } catch (error) {
+            console.error('Error cargando agenda:', error);
+            showToast('No se pudo cargar tu agenda personal', 'error');
+        }
+    }
+
+    async function toggleAgenda(actividadId) {
+        if (!isEstudiante) {
+            showToast('Debes iniciar sesión como estudiante para guardar actividades', 'warning');
+            return;
+        }
+        try {
+            const res = await fetch('/agenda/api/agenda/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actividad_id: actividadId })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (data.saved) {
+                    savedIds.push(actividadId);
+                    showToast('✔️ Actividad agregada a tu agenda', 'success');
+                } else {
+                    savedIds = savedIds.filter(id => id !== actividadId);
+                    showToast('❌ Actividad removida de tu agenda', 'warning');
+                }
+                // Refrescar las tarjetas para actualizar el estado del botón
+                filterAndRender();
+            } else {
+                showToast(data.error || 'Error al modificar la agenda', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Error de conexión con el servidor', 'error');
+        }
+    }
+
+    function isSaved(id) {
+        return isEstudiante && savedIds.includes(id);
+    }
+
+    // ---------- CARGAR DATOS Y POBLAR CATEGORÍAS ----------
+    async function loadActivities() {
+        try {
+            const res = await fetch('/api/actividades');
+            if (!res.ok) throw new Error('Error al cargar actividades');
+            allActivities = await res.json();
+            
+            // Primero poblamos el filtro de categorías (depende de allActivities)
+            populateCategoryFilter();
+            
+            // Luego cargamos la agenda del estudiante (si corresponde)
+            if (isEstudiante) {
+                await loadAgendaFromServer();
+            }
+            
+            // Finalmente renderizamos las actividades
+            filterAndRender();
+        } catch (error) {
+            console.error(error);
+            showToast('Error al cargar las actividades', 'error');
+            document.getElementById('jornadaGrid').innerHTML = '<div class="empty-state">Error al cargar actividades. Recarga la página.</div>';
+            document.getElementById('extraGrid').innerHTML = '<div class="empty-state">Error al cargar actividades. Recarga la página.</div>';
+        }
+    }
+
+    // ---------- POBLAR FILTRO DE CATEGORÍAS DINÁMICAMENTE ----------
+    function populateCategoryFilter() {
+        const select = document.getElementById('categoryFilter');
+        if (!select) return;
+        // Obtener todas las categorías únicas (sin valores vacíos)
+        const categories = new Set();
+        allActivities.forEach(act => {
+            if (act.category && act.category.trim() !== '') {
+                categories.add(act.category);
+            }
+        });
+        // Convertir a array y ordenar alfabéticamente
+        const sortedCategories = Array.from(categories).sort();
+        // Mantener la opción "Todas" al inicio
+        let options = '<option value="">Todas</option>';
+        sortedCategories.forEach(cat => {
+            options += `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`;
+        });
+        select.innerHTML = options;
+        // Restaurar el valor seleccionado anterior (si existe) después de recargar
+        if (categoryFilter) {
+            select.value = categoryFilter;
+        }
+    }
+
+    // ---------- UTILIDADES ----------
+    function isProxima(fechaStr) {
+        if (!fechaStr) return false;
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+        const fechaAct = new Date(fechaStr);
+        return fechaAct >= hoy;
+    }
+
+    function sortByDate(activities) {
+        return activities.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.start_time || '00:00'}`);
+            const dateB = new Date(`${b.date}T${b.start_time || '00:00'}`);
+            return sortAscending ? dateA - dateB : dateB - dateA;
+        });
+    }
+
+    function filterAndRender() {
+        let filtered = [...allActivities];
+
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            filtered = filtered.filter(a =>
+                a.title.toLowerCase().includes(term) ||
+                (a.speaker && a.speaker.toLowerCase().includes(term))
+            );
+        }
+        if (dayFilter) {
+            filtered = filtered.filter(a => a.day && a.day.toLowerCase() === dayFilter.toLowerCase());
+        }
+        if (categoryFilter) {
+            filtered = filtered.filter(a => a.category === categoryFilter);
+        }
+
+        // Separar por tipo
+        let jornada = filtered.filter(a => a.event_type === 'jornada');
+        let extra = filtered.filter(a => a.event_type === 'extra');
+
+        // Ordenar
+        jornada = sortByDate(jornada);
+        extra = sortByDate(extra);
+
+        renderActivities('jornada', jornada);
+        renderActivities('extra', extra);
+
+        const total = jornada.length + extra.length;
+        const resultSpan = document.getElementById('resultCount');
+        if (resultSpan) {
+            resultSpan.innerHTML = `Mostrando ${total} actividades (${jornada.length} de jornada, ${extra.length} especiales)`;
+        }
+    }
+
+    function renderActivities(type, activities) {
+        const container = document.getElementById(type === 'jornada' ? 'jornadaGrid' : 'extraGrid');
+        if (!container) return;
+
+        if (activities.length === 0) {
+            container.innerHTML = `<div class="empty-state"><i class="fas fa-calendar-times fa-3x mb-2"></i><p>No hay actividades en esta categoría.</p></div>`;
+            return;
+        }
+
+        let html = '';
+        for (let act of activities) {
+            const imageUrl = act.image ? `{{ url_for('static', filename='uploads/') }}${act.image}` : `{{ url_for('static', filename='img/imagen2.png') }}`;
+            const badgeText = act.event_type === 'jornada'
+                ? (act.jornada_numero ? `${act.jornada_numero}va Jornada ${act.date.slice(0,4)}` : 'Jornada')
+                : 'Evento Especial';
+            const badgeClass = act.event_type === 'jornada' ? 'card-badge' : 'card-badge extra';
+            const proxima = isProxima(act.date);
+            const saved = isSaved(act.id);
+            const btnText = saved ? '<i class="fas fa-check-circle"></i> Guardado' : '<i class="fas fa-heart"></i> Me interesa';
+
+            html += `
+                <div class="activity-card" data-id="${act.id}">
+                    <div class="card-img">
+                        <img src="${imageUrl}" alt="${escapeHtml(act.title)}">
+                        <span class="${badgeClass}">${escapeHtml(badgeText)}</span>
+                        ${proxima ? '<span class="badge-proxima">🔥 Próxima</span>' : ''}
+                        <span class="card-day">${capitalize(act.day)}</span>
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${escapeHtml(act.title)}</h3>
+                        <div class="card-info">
+                            <span><i class="fas fa-user-tie"></i> ${escapeHtml(act.speaker) || 'Ponente'}</span>
+                            <span><i class="fas fa-clock"></i> ${act.start_time}${act.end_time ? ' - ' + act.end_time : ''}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(act.venue) || 'Por definir'}</span>
+                        </div>
+                        <div class="card-description">
+                            ${escapeHtml(act.description ? act.description.substring(0, 100) : 'Sin descripción')}${act.description && act.description.length > 100 ? '...' : ''}
+                        </div>
+                        <div class="card-actions">
+                            <a href="/detalle/${act.id}" class="btn-detail"><i class="fas fa-eye"></i> Ver detalles</a>
+                            ${isEstudiante ? `<button class="btn-interest ${saved ? 'saved' : ''}" data-id="${act.id}" onclick="toggleAgenda(${act.id})">${btnText}</button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+    }
+
+    // ---------- FILTROS Y ORDENAMIENTO ----------
+    function initFilters() {
+        const search = document.getElementById('searchInput');
+        const day = document.getElementById('dayFilter');
+        const cat = document.getElementById('categoryFilter');
+        const clear = document.getElementById('clearFiltersBtn');
+
+        search.addEventListener('input', () => {
+            searchTerm = search.value;
+            filterAndRender();
+        });
+        day.addEventListener('change', () => {
+            dayFilter = day.value;
+            filterAndRender();
+        });
+        cat.addEventListener('change', () => {
+            categoryFilter = cat.value;
+            filterAndRender();
+        });
+        clear.addEventListener('click', () => {
+            search.value = '';
+            day.value = '';
+            cat.value = '';
+            searchTerm = '';
+            dayFilter = '';
+            categoryFilter = '';
+            filterAndRender();
+        });
+    }
+
+    function initSort() {
+        const sortBtn = document.getElementById('sortToggleBtn');
+        sortBtn.addEventListener('click', () => {
+            sortAscending = !sortAscending;
+            const icon = sortAscending ? 'fa-sort-amount-down-alt' : 'fa-sort-amount-up';
+            const text = sortAscending ? 'Más cercanas primero' : 'Más lejanas primero';
+            sortBtn.innerHTML = `<i class="fas ${icon}"></i> Orden: ${text}`;
+            filterAndRender();
+        });
+    }
+
+    function initTabs() {
+        const tabs = document.querySelectorAll('.tab-btn');
+        tabs.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.getAttribute('data-type');
+                tabs.forEach(t => t.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`tab-${type}`).classList.add('active');
+                currentType = type;
+            });
+        });
+    }
+
+    // ---------- UTILIDADES VARIAS ----------
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    function capitalize(str) {
+        if (!str) return '';
+        return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+    }
+
+    // Inicialización
+    document.addEventListener('DOMContentLoaded', () => {
+        loadActivities();
+        initFilters();
+        initTabs();
+        initSort();
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,549 @@
+{% extends "base.html" %}
+
+{% block title %}Mi Agenda Personal - Jornada 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+.agenda-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+.agenda-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.agenda-header h1 {
+    color: #008000;
+    font-weight: 800;
+    font-size: 2rem;
+}
+.agenda-header p {
+    color: #64748b;
+}
+.agenda-stats {
+    margin-top: 15px;
+    background: #f0fdf4;
+    display: inline-block;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.btn-export-pdf {
+    margin-left: 15px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 50px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-export-pdf:hover {
+    background: #b02a37;
+    transform: translateY(-2px);
+}
+.agenda-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.agenda-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: 0.3s;
+    display: flex;
+    flex-direction: row;
+    border: 1px solid #eef2f6;
+}
+.agenda-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 10px 25px rgba(0,128,0,0.1);
+}
+.card-img {
+    width: 160px;
+    background: #e8f5e9;
+    position: relative;
+}
+.card-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card-content {
+    flex: 1;
+    padding: 18px;
+}
+.card-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #1e293b;
+}
+.card-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+.card-info i {
+    color: #008000;
+    width: 18px;
+}
+.card-description {
+    font-size: 13px;
+    color: #475569;
+    border-left: 3px solid #008000;
+    padding-left: 12px;
+    margin-bottom: 16px;
+    line-height: 1.4;
+}
+.card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: center;
+}
+.btn-remove {
+    background: #fef2f2;
+    border: 1px solid #fee2e2;
+    color: #dc2626;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-remove:hover {
+    background: #dc2626;
+    color: white;
+    border-color: #dc2626;
+}
+.btn-detail {
+    background: #f0fdf4;
+    color: #008000;
+    padding: 6px 16px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+.btn-detail:hover {
+    background: #008000;
+    color: white;
+}
+.btn-qr {
+    background: #e3f2fd;
+    color: #0d6efd;
+    border: 1px solid #b6d4fe;
+    padding: 6px 16px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.btn-qr:hover {
+    background: #0d6efd;
+    color: white;
+    border-color: #0d6efd;
+}
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    border-radius: 24px;
+    border: 1px solid #eef2f6;
+}
+.empty-state i {
+    font-size: 64px;
+    color: #cbd5e1;
+    margin-bottom: 20px;
+}
+.empty-state h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+.empty-state p {
+    color: #64748b;
+    margin-bottom: 20px;
+}
+@media (max-width: 700px) {
+    .agenda-card {
+        flex-direction: column;
+    }
+    .card-img {
+        width: 100%;
+        height: 180px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agenda-container">
+    <div class="agenda-header">
+        <h1><i class="fas fa-bookmark"></i> Mi Agenda</h1>
+        <p>Actividades que te interesan y has guardado</p>
+        <div class="agenda-stats" id="agendaCount">
+            <i class="fas fa-calendar-check"></i> <span>0 actividades</span>
+            <a href="{{ url_for('agenda.exportar_mi_agenda') }}" class="btn-export-pdf" id="exportPdfBtn" style="display: none;">
+                <i class="fas fa-file-pdf"></i> Exportar a PDF
+            </a>
+        </div>
+    </div>
+
+    <div id="agendaList" class="agenda-list">
+        <div class="empty-state">
+            <i class="fas fa-spinner fa-pulse"></i>
+            <h3>Cargando tu agenda...</h3>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL PARA ESCANEAR CÓDIGO QR -->
+<div class="modal fade" id="qrScannerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-qrcode"></i> Escanear código QR de asistencia</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="qr-reader" style="width: 100%;"></div>
+                <div id="qr-result" class="mt-3"></div>
+                <div class="alert alert-info mt-2 small">
+                    <i class="fas fa-info-circle"></i> Apunta la cámara hacia el código QR generado por el organizador.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL DE CONFIRMACIÓN PROFESIONAL -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmModalMessage">
+                ¿Estás seguro de realizar esta acción?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="confirmModalOkBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+// ==================== FUNCIÓN SHOWTOAST DE RESPALDO ====================
+if (typeof showToast === 'undefined') {
+    window.showToast = function(message, type = 'success') {
+        alert(message);
+    };
+}
+
+// ==================== FUNCIÓN DE CONFIRMACIÓN MODAL ====================
+function confirmAction(message, title, onConfirm) {
+    const modalEl = document.getElementById('confirmModal');
+    if (!modalEl) {
+        if (confirm(message)) onConfirm();
+        return;
+    }
+    const modal = new bootstrap.Modal(modalEl);
+    document.getElementById('confirmModalTitle').innerText = title || 'Confirmar acción';
+    document.getElementById('confirmModalMessage').innerHTML = message;
+    const okBtn = document.getElementById('confirmModalOkBtn');
+    // Reemplazar el evento para evitar duplicados
+    const newOkBtn = okBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    newOkBtn.addEventListener('click', () => {
+        modal.hide();
+        if (onConfirm) onConfirm();
+    });
+    modal.show();
+}
+
+// ==================== VERIFICAR ROL DE ESTUDIANTE ====================
+const isStudent = {% if current_user.is_authenticated and current_user.role and current_user.role.name == 'estudiante' %}true{% else %}false{% endif %};
+
+if (!isStudent) {
+    const agendaListDiv = document.getElementById('agendaList');
+    if (agendaListDiv) {
+        agendaListDiv.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-exclamation-triangle" style="color: #f4d35e;"></i>
+                <h3>Acceso no autorizado</h3>
+                <p>Esta sección es exclusiva para estudiantes.</p>
+                <a href="{{ url_for('auth.login') }}" class="btn btn-success mt-3">Iniciar sesión como estudiante</a>
+            </div>
+        `;
+    }
+} else {
+    // ==================== VARIABLES GLOBALES ====================
+    let allActivities = [];
+    let savedIds = [];
+    let html5QrCode = null;
+    let currentScanActividadId = null;
+
+    // ==================== CARGAR AGENDA DESDE EL SERVIDOR ====================
+    async function loadAgendaIds() {
+        try {
+            const res = await fetch('/agenda/api/agenda');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const data = await res.json();
+            savedIds = data.saved_ids || [];
+        } catch (error) {
+            console.error('Error al cargar IDs de agenda:', error);
+            showToast('❌ Error al cargar tu agenda. Intenta más tarde.', 'error');
+            savedIds = [];
+        }
+    }
+
+    async function loadAllActivities() {
+        try {
+            const res = await fetch('/api/actividades');
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            allActivities = await res.json();
+        } catch (error) {
+            console.error('Error al cargar actividades:', error);
+            showToast('❌ Error al cargar las actividades.', 'error');
+            allActivities = [];
+        }
+    }
+
+    async function refreshAgenda() {
+        const container = document.getElementById('agendaList');
+        if (!container) return;
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-spinner fa-pulse"></i>
+                <h3>Cargando tu agenda...</h3>
+            </div>
+        `;
+        await loadAgendaIds();
+        await loadAllActivities();
+        renderAgenda();
+    }
+
+    // ==================== RENDERIZAR LA AGENDA ====================
+    function renderAgenda() {
+        const savedActivities = allActivities.filter(a => savedIds.includes(a.id));
+        const count = savedActivities.length;
+        const countSpan = document.querySelector('#agendaCount span');
+        const exportBtn = document.getElementById('exportPdfBtn');
+        
+        if (countSpan) countSpan.innerText = `${count} actividad${count !== 1 ? 'es' : ''}`;
+        if (exportBtn) exportBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+
+        const container = document.getElementById('agendaList');
+        if (!container) return;
+
+        if (savedActivities.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-calendar-times"></i>
+                    <h3>Tu agenda está vacía</h3>
+                    <p>Explora las actividades y haz clic en "Me interesa" para agregarlas.</p>
+                    <a href="{{ url_for('public.ver_actividades') }}" class="btn btn-success mt-3">Explorar actividades</a>
+                </div>
+            `;
+            return;
+        }
+
+        const ahora = new Date();
+        let html = '';
+        for (let act of savedActivities) {
+            const imageUrl = act.image ? `{{ url_for('static', filename='uploads/') }}${act.image}` : `{{ url_for('static', filename='img/imagen2.png') }}`;
+            let esFutura = false;
+            let botonQR = '';
+            if (act.date && act.start_time) {
+                try {
+                    const fechaHoraEvento = new Date(`${act.date}T${act.start_time}`);
+                    esFutura = fechaHoraEvento > ahora;
+                    if (esFutura) {
+                        botonQR = `<button class="btn-qr" onclick="abrirEscanerQR(${act.id}, '${escapeHtml(act.title)}')"><i class="fas fa-qrcode"></i> Registrar asistencia</button>`;
+                    }
+                } catch(e) { console.warn(e); }
+            }
+            html += `
+                <div class="agenda-card" data-id="${act.id}">
+                    <div class="card-img">
+                        <img src="${imageUrl}" alt="${escapeHtml(act.title)}">
+                    </div>
+                    <div class="card-content">
+                        <h3 class="card-title">${escapeHtml(act.title)}</h3>
+                        <div class="card-info">
+                            <span><i class="fas fa-user-tie"></i> ${escapeHtml(act.speaker) || 'Ponente'}</span>
+                            <span><i class="fas fa-clock"></i> ${act.start_time}${act.end_time ? ' - ' + act.end_time : ''}</span>
+                            <span><i class="fas fa-map-marker-alt"></i> ${escapeHtml(act.venue) || 'Por definir'}</span>
+                            <span><i class="fas fa-tag"></i> ${escapeHtml(act.category)}</span>
+                        </div>
+                        <div class="card-description">
+                            ${escapeHtml(act.description ? act.description.substring(0, 120) : 'Sin descripción')}${act.description && act.description.length > 120 ? '...' : ''}
+                        </div>
+                        <div class="card-actions">
+                            <a href="/detalle/${act.id}" class="btn-detail"><i class="fas fa-eye"></i> Ver detalles</a>
+                            <button class="btn-remove" data-id="${act.id}" data-title="${escapeHtml(act.title)}"><i class="fas fa-trash-alt"></i> Quitar</button>
+                            ${botonQR}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        container.innerHTML = html;
+        // Asignar eventos de eliminación con modal
+        document.querySelectorAll('.btn-remove').forEach(btn => {
+            btn.removeEventListener('click', btn._listener);
+            const listener = () => {
+                const id = parseInt(btn.getAttribute('data-id'));
+                const title = btn.getAttribute('data-title');
+                confirmAction(
+                    `¿Estás seguro de que quieres quitar la actividad "<strong>${escapeHtml(title)}</strong>" de tu agenda?`,
+                    'Confirmar eliminación',
+                    () => removeFromAgenda(id)
+                );
+            };
+            btn.addEventListener('click', listener);
+            btn._listener = listener;
+        });
+    }
+
+    // ==================== QUITAR ACTIVIDAD DE LA AGENDA ====================
+    window.removeFromAgenda = async function(actividadId) {
+        try {
+            const res = await fetch('/agenda/api/agenda/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actividad_id: actividadId })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                if (!data.saved) {
+                    savedIds = savedIds.filter(id => id !== actividadId);
+                }
+                renderAgenda();
+                showToast('✅ Actividad removida de tu agenda', 'success');
+            } else {
+                showToast(data.error || 'Error al quitar de agenda', 'error');
+            }
+        } catch (error) {
+            console.error(error);
+            showToast('Error de conexión', 'error');
+        }
+    };
+
+    // ==================== ESCANER QR ====================
+    window.abrirEscanerQR = function(actividadId, titulo) {
+        currentScanActividadId = actividadId;
+        const modal = new bootstrap.Modal(document.getElementById('qrScannerModal'));
+        const qrReaderDiv = document.getElementById('qr-reader');
+        const resultDiv = document.getElementById('qr-result');
+        resultDiv.innerHTML = '';
+        modal.show();
+        
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => startScanner()).catch(err => console.error(err));
+        } else {
+            startScanner();
+        }
+        
+        function startScanner() {
+            if (!qrReaderDiv) return;
+            html5QrCode = new Html5Qrcode("qr-reader");
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, onScanError)
+                .catch(err => {
+                    console.error(err);
+                    resultDiv.innerHTML = '<div class="alert alert-danger">No se pudo acceder a la cámara. Verifica los permisos.</div>';
+                });
+        }
+        
+        function onScanSuccess(decodedText) {
+            if (html5QrCode && html5QrCode.isScanning) html5QrCode.stop().catch(err => console.error(err));
+            resultDiv.innerHTML = '<div class="alert alert-info">Procesando código...</div>';
+            fetch('/api/asistencia/registrar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: decodedText })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    resultDiv.innerHTML = `<div class="alert alert-success">✅ ${data.message}</div>`;
+                    showToast(data.message, 'success');
+                    setTimeout(() => bootstrap.Modal.getInstance(document.getElementById('qrScannerModal')).hide(), 2000);
+                } else {
+                    resultDiv.innerHTML = `<div class="alert alert-danger">❌ ${data.error}</div>`;
+                    showToast(data.error, 'error');
+                    setTimeout(() => {
+                        resultDiv.innerHTML = '';
+                        if (html5QrCode && !html5QrCode.isScanning) startScanner();
+                    }, 3000);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                resultDiv.innerHTML = '<div class="alert alert-danger">Error de conexión. Intenta de nuevo.</div>';
+                showToast('Error de conexión', 'error');
+                setTimeout(() => {
+                    resultDiv.innerHTML = '';
+                    if (html5QrCode && !html5QrCode.isScanning) startScanner();
+                }, 3000);
+            });
+        }
+        
+        function onScanError(error) {}
+    };
+    
+    document.getElementById('qrScannerModal').addEventListener('hidden.bs.modal', function () {
+        if (html5QrCode && html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => { html5QrCode = null; }).catch(err => console.error(err));
+        }
+        document.getElementById('qr-result').innerHTML = '';
+    });
+
+    // ==================== ESCAPE HTML ====================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;');
+    }
+
+    // ==================== INICIALIZACIÓN ====================
+    document.addEventListener('DOMContentLoaded', refreshAgenda);
+}
+</script>
+{% endblock %}

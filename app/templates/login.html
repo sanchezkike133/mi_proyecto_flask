@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}Iniciar sesión - Jornada {{ current_jornada_year }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .login-wrapper {
+        min-height: calc(100vh - 200px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1rem;
+        background: linear-gradient(135deg, #f0f9f0 0%, #e8f0e8 100%);
+    }
+    .login-card {
+        max-width: 480px;
+        width: 100%;
+        border: none;
+        border-radius: 32px;
+        backdrop-filter: blur(10px);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 25px 45px -12px rgba(0, 0, 0, 0.2);
+        transition: transform 0.3s ease;
+    }
+    .login-card:hover {
+        transform: translateY(-5px);
+    }
+    .login-header {
+        background: linear-gradient(135deg, #008000, #0a6b00);
+        padding: 2rem;
+        text-align: center;
+        border-radius: 32px 32px 0 0;
+        color: white;
+    }
+    .login-header i {
+        font-size: 3rem;
+        background: rgba(255,255,255,0.2);
+        padding: 0.8rem;
+        border-radius: 50%;
+        margin-bottom: 1rem;
+    }
+    .login-header h2 {
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+    }
+    .login-header p {
+        opacity: 0.85;
+        font-size: 0.9rem;
+    }
+    .login-body {
+        padding: 2rem;
+    }
+    .form-floating {
+        margin-bottom: 1.25rem;
+    }
+    .form-floating input {
+        border-radius: 14px;
+        border: 1px solid #dee2e6;
+        padding: 1rem 0.75rem;
+        height: auto;
+        transition: all 0.2s;
+    }
+    .form-floating input:focus {
+        border-color: #008000;
+        box-shadow: 0 0 0 0.2rem rgba(0,128,0,0.15);
+    }
+    .form-floating label {
+        font-weight: 500;
+        color: #6c757d;
+    }
+    .btn-login {
+        background: #008000;
+        border: none;
+        border-radius: 14px;
+        padding: 0.8rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.2s;
+    }
+    .btn-login:hover {
+        background: #0a6b00;
+        transform: scale(1.02);
+        box-shadow: 0 8px 20px rgba(0,128,0,0.2);
+    }
+    .btn-cancel {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 14px;
+        padding: 0.8rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.2s;
+        color: #6c757d;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+    .btn-cancel:hover {
+        background: #e9ecef;
+        border-color: #ced4da;
+        color: #495057;
+        transform: translateY(-2px);
+    }
+    .divider {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        margin: 1.5rem 0;
+        color: #adb5bd;
+        font-size: 0.8rem;
+    }
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .divider::before {
+        margin-right: 1rem;
+    }
+    .divider::after {
+        margin-left: 1rem;
+    }
+    .recovery-links a {
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+    }
+    .recovery-links a:hover {
+        color: #008000 !important;
+    }
+    .register-link {
+        background: #f8f9fa;
+        border-radius: 20px;
+        padding: 0.8rem;
+        text-align: center;
+        margin-top: 1rem;
+    }
+    /* Mensajes de error flash dentro del formulario */
+    .alert-flash {
+        border-radius: 14px;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+    .alert-flash.error {
+        background-color: #fdecea;
+        border: 1px solid #f5c6cb;
+        color: #c62828;
+    }
+    .alert-flash.success {
+        background-color: #e8f5e9;
+        border: 1px solid #c8e6c9;
+        color: #008000;
+    }
+    @media (max-width: 576px) {
+        .login-card {
+            margin: 0 1rem;
+        }
+        .login-header {
+            padding: 1.5rem;
+        }
+        .login-body {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-chalkboard-user"></i>
+            <h2>Bienvenido/a</h2>
+            <p>Accede a la plataforma de la Jornada Académica {{ current_jornada_year }}</p>
+        </div>
+        <div class="login-body">
+            <!-- Mostrar mensajes flash también dentro del formulario (además de los toasts) -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert-flash {{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-floating mb-3">
+                    <input type="text" class="form-control" id="identifier" name="identifier" 
+                           placeholder="Matrícula o email" required autofocus>
+                    <label for="identifier"><i class="fas fa-id-card me-2"></i>Matrícula (estudiante) o Email (admin)</label>
+                    <div class="form-text small text-muted mt-1">Ej. 13220064 o admin@ejemplo.com</div>
+                </div>
+
+                <div class="form-floating mb-4">
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+                    <label for="password"><i class="fas fa-lock me-2"></i>Contraseña</label>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-login w-100 text-white">
+                        <i class="fas fa-sign-in-alt me-2"></i>Iniciar sesión
+                    </button>
+                    <a href="{{ url_for('public.index') }}" class="btn-cancel w-100">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </a>
+                </div>
+            </form>
+
+            <div class="divider">¿Problemas para acceder?</div>
+
+            <div class="recovery-links d-flex justify-content-between flex-wrap gap-2">
+                <a href="{{ url_for('auth.forgot_password_student') }}" class="text-success">
+                    <i class="fas fa-graduation-cap"></i> Estudiante: recuperar contraseña
+                </a>
+                <a href="{{ url_for('auth.forgot_password') }}" class="text-success">
+                    <i class="fas fa-user-tie"></i> Administrador: recuperar acceso
+                </a>
+            </div>
+
+            <div class="register-link mt-3">
+                <span class="text-muted">¿Aún no tienes cuenta?</span>
+                <a href="{{ url_for('auth.register_form') }}" class="text-success fw-semibold ms-1">Regístrate aquí</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

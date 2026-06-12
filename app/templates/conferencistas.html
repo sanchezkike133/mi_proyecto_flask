@@ -1,0 +1,506 @@
+{% extends "base.html" %}
+
+{% block title %}Conferencistas - Jornada 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+.conferencistas-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+
+.page-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.page-header .badge {
+    display: inline-block;
+    background: #f4d35e;
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.page-header h1 {
+    font-size: 38px;
+    color: #008000;
+}
+
+/* Barra de búsqueda */
+.search-bar {
+    max-width: 500px;
+    margin: 0 auto 40px auto;
+    position: relative;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 14px 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50px;
+    font-size: 16px;
+    transition: all 0.3s;
+    padding-left: 45px;
+}
+
+.search-bar input:focus {
+    border-color: #008000;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,128,0,0.1);
+}
+
+.search-bar i {
+    position: absolute;
+    left: 18px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 18px;
+}
+
+.result-count {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.conferencistas-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.speaker-card {
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex;
+    flex-direction: column;
+}
+
+.speaker-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 35px rgba(0,128,0,0.12);
+}
+
+.speaker-img-container {
+    height: 260px;
+    background: #e8f5e9;
+    overflow: hidden;
+    position: relative;
+}
+
+.speaker-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.speaker-card:hover .speaker-img-container img {
+    transform: scale(1.08);
+}
+
+.speaker-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.speaker-name {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #008000;
+    margin-bottom: 8px;
+}
+
+.speaker-specialty {
+    font-size: 0.85rem;
+    color: #f59e0b;
+    font-weight: 500;
+    margin-bottom: 12px;
+    display: inline-block;
+    background: #fef3c7;
+    padding: 4px 12px;
+    border-radius: 30px;
+}
+
+.speaker-bio {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+    margin: 12px 0;
+    flex: 1;
+}
+
+.card-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-detail {
+    background: #008000;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-detail:hover {
+    background: #006600;
+    transform: translateY(-2px);
+}
+
+.contact-buttons {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.contact-buttons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    color: #008000;
+    transition: all 0.2s;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.contact-buttons a:hover {
+    background: #008000;
+    color: white;
+    transform: translateY(-2px);
+}
+
+.load-more-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.load-more-btn {
+    background: #008000;
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.load-more-btn:hover {
+    background: #006800;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0,128,0,0.2);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px;
+    background: white;
+    border-radius: 24px;
+    color: #64748b;
+}
+
+/* Modal personalizado */
+.modal-speaker .modal-dialog {
+    max-width: 700px;
+}
+
+.modal-speaker .modal-header {
+    background: #008000;
+    color: white;
+    border-bottom: none;
+}
+
+.modal-speaker .modal-title {
+    font-weight: 700;
+}
+
+.modal-speaker .close-btn {
+    color: white;
+    opacity: 0.8;
+}
+
+.modal-speaker .modal-body {
+    padding: 25px;
+}
+
+.speaker-detail-img {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.speaker-detail-img img {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 4px solid #008000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.detail-field {
+    margin-bottom: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    padding-bottom: 8px;
+}
+
+.detail-field strong {
+    display: inline-block;
+    width: 130px;
+    color: #1e293b;
+}
+
+.detail-activities {
+    margin-top: 15px;
+}
+
+.detail-activities h6 {
+    color: #008000;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.activity-item {
+    background: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+}
+
+.activity-title {
+    font-weight: 600;
+    color: #0f172a;
+}
+
+@media (max-width: 768px) {
+    .conferencistas-grid {
+        grid-template-columns: 1fr;
+    }
+    .speaker-name {
+        font-size: 1.2rem;
+    }
+    .detail-field strong {
+        width: 100%;
+        display: block;
+        margin-bottom: 4px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="conferencistas-page">
+    <div class="page-header">
+        <div class="badge">🎤 {{ current_jornada_year }}</div>
+        <h1><i class="fas fa-chalkboard-teacher"></i> Conferencistas</h1>
+        <p>Conoce a los expertos que compartirán su conocimiento en la jornada</p>
+    </div>
+
+    <!-- Buscador -->
+    <div class="search-bar">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Buscar por nombre, especialidad o biografía...">
+    </div>
+    <div id="resultCount" class="result-count"></div>
+
+    <div id="conferencistasGrid" class="conferencistas-grid">
+        <!-- Las tarjetas se renderizan con JavaScript para facilitar el filtrado -->
+    </div>
+
+    <div class="load-more-container" id="loadMoreContainer">
+        <button class="load-more-btn" id="loadMoreBtn">
+            Cargar más conferencistas <i class="fas fa-arrow-down"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Modal para detalles del conferencista -->
+<div class="modal fade modal-speaker" id="speakerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles del Conferencista</h5>
+                <button type="button" class="btn-close close-btn" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="speakerModalBody">
+                <!-- Contenido dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Datos de conferencistas enviados desde el backend (convertidos a JSON seguro)
+    const conferencistasData = {{ conferencistas | tojson | safe }};
+    
+    let visibleCount = 6;
+    let filteredIndices = [];  // almacena índices de conferencistas que coinciden con la búsqueda
+
+    // Función para generar el HTML de una tarjeta (recibe el objeto conferencista y su índice)
+    function generateCardHTML(c, idx) {
+        const imgUrl = c.imagen ? "{{ url_for('static', filename='uploads/') }}" + c.imagen : "{{ url_for('static', filename='img/imagen2.png') }}";
+        const bioShort = c.bio ? (c.bio.length > 100 ? c.bio.substring(0, 100) + '...' : c.bio) : 'Sin biografía disponible.';
+        const specialty = c.especialidad || '';
+        const email = c.email || '';
+        const social = c.social || '';
+        
+        return `
+            <div class="speaker-card" data-idx="${idx}">
+                <div class="speaker-img-container">
+                    <img src="${imgUrl}" alt="${escapeHtml(c.nombre)}">
+                </div>
+                <div class="speaker-info">
+                    <h3 class="speaker-name">${escapeHtml(c.nombre)}</h3>
+                    ${specialty ? `<div class="speaker-specialty"><i class="fas fa-brain"></i> ${escapeHtml(specialty)}</div>` : ''}
+                    <div class="speaker-bio">${escapeHtml(bioShort)}</div>
+                    <div class="card-actions">
+                        <button class="btn-detail" onclick="showSpeakerDetail(${idx})">
+                            <i class="fas fa-eye"></i> Ver detalles
+                        </button>
+                        <div class="contact-buttons">
+                            ${email ? `<a href="mailto:${escapeHtml(email)}" title="Correo electrónico"><i class="fas fa-envelope"></i></a>` : ''}
+                            ${social ? `<a href="${escapeHtml(social)}" target="_blank" title="Red social"><i class="fab fa-linkedin"></i></a>` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Función para mostrar el modal con los detalles completos
+    window.showSpeakerDetail = function(idx) {
+        const c = conferencistasData[idx];
+        if (!c) return;
+        
+        const imgUrl = c.imagen ? "{{ url_for('static', filename='uploads/') }}" + c.imagen : "{{ url_for('static', filename='img/imagen2.png') }}";
+        
+        let activitiesHtml = '';
+        if (c.actividades && c.actividades.length > 0) {
+            activitiesHtml = '<div class="detail-activities"><h6><i class="fas fa-calendar-alt"></i> Actividades relacionadas</h6>';
+            c.actividades.forEach(act => {
+                activitiesHtml += `
+                    <div class="activity-item">
+                        <div class="activity-title">${escapeHtml(act.titulo)}</div>
+                        <div><i class="fas fa-calendar-day"></i> ${escapeHtml(act.dia || '')} - ${escapeHtml(act.hora || '')}</div>
+                    </div>
+                `;
+            });
+            activitiesHtml += '</div>';
+        }
+        
+        const modalBody = `
+            <div class="speaker-detail-img">
+                <img src="${imgUrl}" alt="${escapeHtml(c.nombre)}">
+            </div>
+            <div class="detail-field"><strong>Nombre:</strong> ${escapeHtml(c.nombre)}</div>
+            <div class="detail-field"><strong>Grado académico:</strong> ${escapeHtml(c.grado || 'No especificado')}</div>
+            <div class="detail-field"><strong>Especialidad:</strong> ${escapeHtml(c.especialidad || 'No especificada')}</div>
+            <div class="detail-field"><strong>Experiencia:</strong> ${escapeHtml(c.experiencia || 'No especificada')}</div>
+            <div class="detail-field"><strong>Correo:</strong> ${c.email ? `<a href="mailto:${escapeHtml(c.email)}">${escapeHtml(c.email)}</a>` : 'No disponible'}</div>
+            <div class="detail-field"><strong>Teléfono:</strong> ${c.telefono ? escapeHtml(c.telefono) : 'No disponible'}</div>
+            <div class="detail-field"><strong>Red social:</strong> ${c.social ? `<a href="${escapeHtml(c.social)}" target="_blank">${escapeHtml(c.social)}</a>` : 'No disponible'}</div>
+            <div class="detail-field"><strong>Biografía completa:</strong><br>${escapeHtml(c.bio || 'Sin biografía disponible.')}</div>
+            ${activitiesHtml}
+        `;
+        
+        document.getElementById('speakerModalBody').innerHTML = modalBody;
+        new bootstrap.Modal(document.getElementById('speakerModal')).show();
+    };
+    
+    // Escape HTML para evitar inyección
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // Función para actualizar el grid según búsqueda y cantidad visible
+    function renderFilteredGrid() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+        // Filtrar índices
+        filteredIndices = [];
+        conferencistasData.forEach((c, idx) => {
+            const hayTexto = c.nombre.toLowerCase().includes(searchTerm) ||
+                            (c.bio && c.bio.toLowerCase().includes(searchTerm)) ||
+                            (c.especialidad && c.especialidad.toLowerCase().includes(searchTerm));
+            if (!searchTerm || hayTexto) {
+                filteredIndices.push(idx);
+            }
+        });
+        
+        // Actualizar contador
+        document.getElementById('resultCount').innerText = `Mostrando ${Math.min(visibleCount, filteredIndices.length)} de ${filteredIndices.length} conferencistas`;
+        
+        // Generar HTML para los primeros 'visibleCount' elementos del filtro
+        const grid = document.getElementById('conferencistasGrid');
+        const toShow = filteredIndices.slice(0, visibleCount);
+        let html = '';
+        toShow.forEach(idx => {
+            html += generateCardHTML(conferencistasData[idx], idx);
+        });
+        grid.innerHTML = html || '<div class="empty-state">No se encontraron conferencistas que coincidan con la búsqueda.</div>';
+        
+        // Mostrar/ocultar botón "Cargar más"
+        const loadContainer = document.getElementById('loadMoreContainer');
+        if (visibleCount >= filteredIndices.length) {
+            loadContainer.style.display = 'none';
+        } else {
+            loadContainer.style.display = 'block';
+        }
+    }
+    
+    // Evento de búsqueda
+    document.getElementById('searchInput').addEventListener('input', function() {
+        visibleCount = 6;
+        renderFilteredGrid();
+    });
+    
+    // Botón cargar más
+    document.getElementById('loadMoreBtn').addEventListener('click', function() {
+        visibleCount += 6;
+        renderFilteredGrid();
+    });
+    
+    // Inicialización
+    renderFilteredGrid();
+</script>
+{% endblock %}

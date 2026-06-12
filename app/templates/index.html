@@ -1,0 +1,626 @@
+{% extends "base.html" %}
+
+{% block title %}{{ current_jornada }}va Jornada Académica y Cultural {{ current_jornada_year }} | UES San José del Rincón{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ========== HERO SECTION ========== */
+.hero {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 80px 60px;
+    gap: 60px;
+    background: linear-gradient(135deg, #f8fafc 0%, #ffffff 100%);
+}
+.left {
+    width: 50%;
+}
+.tag {
+    display: inline-block;
+    background: #f4d35e;
+    padding: 6px 18px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    color: #1e293b;
+}
+.left h1 {
+    font-size: 56px;
+    color: #008000;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    font-weight: 800;
+}
+.left h1 span {
+    color: #f4d35e;
+}
+.left p {
+    font-size: 18px;
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+.hero-stats {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+}
+.stat {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.stat i {
+    font-size: 28px;
+    color: #008000;
+}
+.stat-info h4 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1e293b;
+}
+.stat-info p {
+    font-size: 13px;
+    color: #64748b;
+    margin: 0;
+}
+.right {
+    width: 45%;
+    text-align: center;
+}
+.right img {
+    width: 100%;
+    max-width: 500px;
+    border-radius: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+}
+
+/* ========== CARDS OFERTA ========== */
+.cards-section {
+    padding: 60px;
+    background: #f8fafc;
+}
+.section-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+.section-header .section-tag {
+    display: inline-block;
+    background: #e8f5e9;
+    color: #008000;
+    padding: 4px 16px;
+    border-radius: 40px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+}
+.section-header h2 {
+    font-size: 36px;
+    color: #1e293b;
+    font-weight: 700;
+}
+.section-header p {
+    color: #64748b;
+    margin-top: 12px;
+}
+.cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.card {
+    background: white;
+    border-radius: 24px;
+    padding: 32px;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+    position: relative;
+    overflow: hidden;
+}
+.card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: #008000;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+.card:hover::before {
+    transform: scaleX(1);
+}
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 40px -12px rgba(0,128,0,0.15);
+}
+.card-icon {
+    font-size: 48px;
+    color: #008000;
+    margin-bottom: 20px;
+}
+.card h3 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+.card p {
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+.card-feature {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    border-top: 1px solid #e2e8f0;
+    margin-top: 16px;
+}
+.card-feature i {
+    color: #008000;
+    font-size: 14px;
+}
+.card-feature span {
+    font-size: 13px;
+    color: #64748b;
+}
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #008000;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 40px;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: 0.3s;
+    margin-bottom: 20px;
+    border: none;
+    cursor: pointer;
+}
+.btn:hover {
+    background: #006800;
+    transform: translateX(4px);
+    gap: 12px;
+}
+.card-green {
+    background: #008000;
+}
+.card-green .card-icon,
+.card-green h3,
+.card-green p,
+.card-green .card-feature span,
+.card-green .card-feature i {
+    color: white;
+}
+.card-green .card-feature {
+    border-top-color: rgba(255,255,255,0.2);
+}
+
+/* ========== PRÓXIMAS ACTIVIDADES ========== */
+.events-section {
+    padding: 60px;
+    background: #ffffff;
+}
+.events-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+.event-card {
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+.event-card:hover {
+    transform: translateY(-5px);
+}
+.event-img {
+    height: 160px;
+    overflow: hidden;
+}
+.event-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.event-info {
+    padding: 18px;
+}
+.event-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.event-meta {
+    font-size: 13px;
+    color: #64748b;
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.event-meta i {
+    width: 16px;
+    color: #008000;
+}
+.event-description {
+    font-size: 13px;
+    color: #475569;
+    margin-bottom: 15px;
+    border-left: 3px solid #008000;
+    padding-left: 10px;
+}
+.event-link {
+    color: #008000;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 13px;
+}
+.status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: bold;
+    margin-left: 8px;
+}
+.status-encurso {
+    background: #fef3c7;
+    color: #d97706;
+}
+.status-proximo {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+.view-all {
+    text-align: center;
+    margin-top: 40px;
+}
+.view-all a {
+    background: #008000;
+    color: white;
+    padding: 12px 30px;
+    border-radius: 40px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.3s;
+}
+.view-all a:hover {
+    background: #006800;
+    transform: translateY(-2px);
+}
+.empty-events {
+    text-align: center;
+    padding: 40px;
+    color: #64748b;
+}
+
+/* ========== CTA SECTION ========== */
+.cta-section {
+    background: linear-gradient(135deg, #008000 0%, #0a6b00 100%);
+    margin: 0 60px 60px;
+    padding: 50px;
+    border-radius: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+.cta-content h3 {
+    color: white;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+.cta-content p {
+    color: rgba(255,255,255,0.85);
+}
+.cta-button {
+    background: white;
+    color: #008000;
+    padding: 14px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 700;
+    transition: 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+/* Responsive */
+@media (max-width: 1100px) {
+    .hero {
+        padding: 50px 30px;
+        flex-direction: column;
+        text-align: center;
+    }
+    .left, .right {
+        width: 100%;
+    }
+    .left h1 {
+        font-size: 42px;
+    }
+    .hero-stats {
+        justify-content: center;
+    }
+    .cards {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    .cards-section, .events-section {
+        padding: 40px 30px;
+    }
+    .cta-section {
+        margin: 0 30px 40px;
+        text-align: center;
+        justify-content: center;
+    }
+}
+@media (max-width: 768px) {
+    .left h1 {
+        font-size: 32px;
+    }
+    .section-header h2 {
+        font-size: 28px;
+    }
+    .card {
+        padding: 24px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero dinámico -->
+<section class="hero">
+    <div class="left">
+        <div class="tag">✨ EVENTO INSTITUCIONAL {{ current_jornada_year }}</div>
+        <h1>{{ current_jornada }}va Jornada<br>Académica y <span>Cultural</span></h1>
+        <p>Impulsando la excelencia académica y la diversidad cultural en un entorno de aprendizaje colaborativo y vanguardia intelectual.</p>
+        <div class="hero-stats">
+            <div class="stat">
+                <i class="fas fa-chalkboard-user"></i>
+                <div class="stat-info"><h4>15+</h4><p>Conferencistas</p></div>
+            </div>
+            <div class="stat">
+                <i class="fas fa-calendar-week"></i>
+                <div class="stat-info"><h4>5</h4><p>Días de jornada</p></div>
+            </div>
+            <div class="stat">
+                <i class="fas fa-certificate"></i>
+                <div class="stat-info"><h4>Certificación</h4><p>Valor curricular</p></div>
+            </div>
+        </div>
+    </div>
+    <div class="right">
+        <img src="{{ url_for('static', filename='img/imagen1.png') }}" alt="Jornada Académica y Cultural">
+    </div>
+</section>
+
+<!-- Oferta académica -->
+<section class="cards-section">
+    <div class="section-header">
+        <div class="section-tag">📌 PROGRAMA DESTACADO</div>
+        <h2>¿Qué te ofrecemos?</h2>
+        <p>Actividades diseñadas para potenciar tu desarrollo profesional y cultural</p>
+    </div>
+    <div class="cards">
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-chalkboard-user"></i></div>
+            <a href="{{ url_for('public.ver_conferencistas') }}" class="btn">Ver conferencistas <i class="fas fa-arrow-right"></i></a>
+            <h3>Talleres de Especialización</h3>
+            <p>Sesiones prácticas con expertos internacionales enfocadas en las nuevas tendencias del desarrollo académico.</p>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Aprendizaje práctico</span></div>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Expertos internacionales</span></div>
+        </div>
+        <div class="card card-green">
+            <div class="card-icon"><i class="fas fa-handshake"></i></div>
+            <h3>Networking</h3>
+            <p>Conecta con profesionales y estudiantes de diversas disciplinas para crear sinergias y oportunidades.</p>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Vinculación profesional</span></div>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Oportunidades laborales</span></div>
+        </div>
+        <div class="card">
+            <div class="card-icon"><i class="fas fa-palette"></i></div>
+            <h3>Encuentros Culturales</h3>
+            <p>Disfruta de presentaciones artísticas, exposiciones y muestras de talento que complementan nuestra formación.</p>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Arte y cultura</span></div>
+            <div class="card-feature"><i class="fas fa-check-circle"></i><span>Expresión artística</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- PRÓXIMAS ACTIVIDADES (solo activas: en curso o futuras) -->
+<section class="events-section">
+    <div class="section-header">
+        <div class="section-tag">📅 PRÓXIMOS EVENTOS</div>
+        <h2>Actividades cercanas</h2>
+        <p>No te pierdas las próximas conferencias, talleres y encuentros</p>
+    </div>
+    <div id="upcomingEventsContainer" class="events-grid">
+        <div class="empty-events">Cargando actividades...</div>
+    </div>
+    <div class="view-all">
+        <a href="{{ url_for('public.ver_actividades') }}">Ver todas las actividades <i class="fas fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- Llamada a la acción -->
+<section class="cta-section">
+    <div class="cta-content">
+        <h3>¿Listo para ser parte de este evento?</h3>
+        <p>Regístrate y participa en la jornada académica más importante del año</p>
+    </div>
+    <a href="{% if current_user.is_authenticated %}{{ url_for('public.ver_actividades') }}{% else %}{{ url_for('auth.login') }}{% endif %}" class="cta-button">
+        Explorar actividades <i class="fas fa-arrow-right"></i>
+    </a>
+</section>
+
+<script>
+    // Función para parsear una fecha YYYY-MM-DD a objeto Date en hora local (sin UTC)
+    function parseLocalDate(dateStr) {
+        if (!dateStr) return null;
+        const partes = dateStr.split('-');
+        return new Date(parseInt(partes[0]), parseInt(partes[1]) - 1, parseInt(partes[2]));
+    }
+
+    // Convertir "HH:MM" a minutos desde medianoche
+    function timeToMinutes(timeStr) {
+        if (!timeStr) return 0;
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        return hours * 60 + minutes;
+    }
+
+    async function loadUpcomingEvents() {
+        const container = document.getElementById('upcomingEventsContainer');
+        try {
+            const res = await fetch('/api/actividades');
+            if (!res.ok) throw new Error();
+            let all = await res.json();
+
+            // Fecha y hora actual del navegador
+            const ahora = new Date();
+            const hoyLocal = new Date(ahora.getFullYear(), ahora.getMonth(), ahora.getDate());
+            const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+
+            // Filtrar actividades que son hoy o futuras, y que aún no han terminado
+            let activas = all.filter(act => {
+                if (!act.date || !act.start_time || !act.end_time) return false;
+                const actDate = parseLocalDate(act.date);
+                if (!actDate) return false;
+                // Si la fecha es anterior a hoy, descartar
+                if (actDate < hoyLocal) return false;
+                
+                const startMin = timeToMinutes(act.start_time);
+                const endMin = timeToMinutes(act.end_time);
+                
+                if (actDate > hoyLocal) {
+                    // Fecha futura: se considera activa (aún no ha comenzado)
+                    return true;
+                } else {
+                    // Misma fecha: activa si aún no ha terminado (endMin > minutosActuales)
+                    return endMin > minutosActuales;
+                }
+            });
+            
+            // Clasificar: en curso vs futuras
+            const enCurso = [];
+            const futuras = [];
+            activas.forEach(act => {
+                const startMin = timeToMinutes(act.start_time);
+                const endMin = timeToMinutes(act.end_time);
+                const actDate = parseLocalDate(act.date);
+                if (actDate.getTime() === hoyLocal.getTime() && startMin <= minutosActuales && endMin > minutosActuales) {
+                    enCurso.push(act);
+                } else {
+                    futuras.push(act);
+                }
+            });
+            
+            // Ordenar en curso por hora de inicio (ascendente)
+            enCurso.sort((a,b) => timeToMinutes(a.start_time) - timeToMinutes(b.start_time));
+            // Ordenar futuras por fecha y hora
+            futuras.sort((a,b) => {
+                const dateA = parseLocalDate(a.date);
+                const dateB = parseLocalDate(b.date);
+                if (dateA < dateB) return -1;
+                if (dateA > dateB) return 1;
+                return timeToMinutes(a.start_time) - timeToMinutes(b.start_time);
+            });
+            
+            const todas = [...enCurso, ...futuras];
+            
+            if (todas.length === 0) {
+                container.innerHTML = '<div class="empty-events">No hay actividades activas en este momento. ¡Pronto más!</div>';
+                return;
+            }
+            
+            let html = '';
+            todas.forEach(act => {
+                const imageUrl = act.image ? `{{ url_for('static', filename='uploads/') }}${act.image}` : `{{ url_for('static', filename='img/imagen2.png') }}`;
+                const badgeText = act.event_type === 'jornada' ? (act.jornada_numero ? `${act.jornada_numero}va Jornada` : 'Jornada') : 'Evento especial';
+                const fechaFormateada = act.date ? act.date.split('-').reverse().join('/') : '';
+                
+                // Determinar estado actual
+                let statusHtml = '';
+                const actDate = parseLocalDate(act.date);
+                if (actDate.getTime() === hoyLocal.getTime()) {
+                    const startMin = timeToMinutes(act.start_time);
+                    const endMin = timeToMinutes(act.end_time);
+                    if (startMin <= minutosActuales && endMin > minutosActuales) {
+                        statusHtml = '<span class="status-badge status-encurso">🟢 En curso</span>';
+                    } else if (startMin > minutosActuales) {
+                        statusHtml = '<span class="status-badge status-proximo">🔜 Próximamente</span>';
+                    }
+                } else if (actDate > hoyLocal) {
+                    statusHtml = '<span class="status-badge status-proximo">🔜 Próximamente</span>';
+                }
+                
+                html += `
+                    <div class="event-card">
+                        <div class="event-img">
+                            <img src="${imageUrl}" alt="${escapeHtml(act.title)}">
+                        </div>
+                        <div class="event-info">
+                            <div class="event-title">
+                                ${escapeHtml(act.title)}
+                                ${statusHtml}
+                            </div>
+                            <div class="event-meta">
+                                <span><i class="fas fa-calendar-alt"></i> ${act.day ? act.day : fechaFormateada}</span>
+                                <span><i class="fas fa-clock"></i> ${act.start_time} - ${act.end_time}</span>
+                                <span><i class="fas fa-tag"></i> ${badgeText}</span>
+                            </div>
+                            <div class="event-description">
+                                ${escapeHtml(act.description ? act.description.substring(0, 100) : 'Sin descripción')}${act.description && act.description.length > 100 ? '...' : ''}
+                            </div>
+                            <a href="/detalle/${act.id}" class="event-link">Ver detalles <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        } catch (err) {
+            console.error(err);
+            container.innerHTML = '<div class="empty-events">Error al cargar las actividades.</div>';
+        }
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadUpcomingEvents);
+</script>
+{% endblock %}

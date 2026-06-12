@@ -1,0 +1,487 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de Actividad - Jornada 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+.container-detalle {
+    max-width: 1100px;
+    margin: auto;
+    padding: 40px 20px;
+}
+.eyebrow {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+h1 {
+    font-size: 40px;
+    font-weight: 800;
+    margin: 10px 0;
+    color: #111827;
+}
+.subtitle {
+    color: #6b7280;
+    margin-bottom: 40px;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    gap: 25px;
+}
+.card {
+    background: white;
+    border-radius: 25px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.box {
+    background: #f1f5f9;
+    padding: 14px 16px;
+    border-radius: 12px;
+    font-weight: 500;
+    color: #222;
+}
+.block {
+    margin-bottom: 25px;
+}
+.row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+.icon-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    padding: 12px 15px;
+    border-radius: 14px;
+    color: #222;
+    border: 1px solid #e2e8f0;
+}
+.icon-box:hover {
+    border-color: #0a7d00;
+    background: #f0fdf4;
+}
+.icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a7d00;
+    border-radius: 50%;
+    color: white;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.side-box {
+    border: 1px solid #e2e8f0;
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 15px;
+    background: #fafafa;
+}
+.side-box:hover {
+    border-color: #0a7d00;
+    background: #f8fafc;
+}
+.btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+}
+.btn-primary {
+    background: #0a7d00;
+    color: white;
+}
+.btn-primary:hover {
+    background: #086600;
+    transform: translateY(-2px);
+}
+.btn-secondary {
+    background: #e2e8f0;
+    color: #1a202c;
+}
+.btn-secondary:hover {
+    background: #cbd5e1;
+}
+.img-container {
+    margin-top: 20px;
+}
+.img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 16px;
+}
+.status-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 30px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+}
+.status-active {
+    background: #e8f5e9;
+    color: #0a7d00;
+}
+.status-finished {
+    background: #f1f5f9;
+    color: #475569;
+}
+.social-link {
+    color: #0a7d00;
+    text-decoration: none;
+    word-break: break-all;
+}
+.social-link:hover {
+    text-decoration: underline;
+}
+/* Modal de confirmación personalizado */
+.modal-confirm .modal-content {
+    border-radius: 20px;
+    border: none;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+.modal-confirm .modal-header {
+    background: #dc2626;
+    color: white;
+    border-radius: 20px 20px 0 0;
+    border-bottom: none;
+    padding: 1rem 1.5rem;
+}
+.modal-confirm .modal-header .btn-close {
+    filter: brightness(0) invert(1);
+}
+.modal-confirm .modal-body {
+    padding: 2rem;
+    font-size: 1rem;
+    color: #1e293b;
+}
+.modal-confirm .modal-footer {
+    border-top: none;
+    padding: 1rem 2rem 2rem;
+    gap: 1rem;
+}
+.btn-cancel-modal {
+    background: #e2e8f0;
+    color: #1e293b;
+    border-radius: 40px;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    font-weight: 600;
+}
+.btn-confirm-modal {
+    background: #dc2626;
+    color: white;
+    border-radius: 40px;
+    padding: 0.5rem 1.5rem;
+    border: none;
+    font-weight: 600;
+}
+.btn-confirm-modal:hover {
+    background: #b91c1c;
+}
+@media (max-width: 900px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    .row {
+        grid-template-columns: 1fr;
+    }
+    h1 {
+        font-size: 28px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-detalle">
+    <div style="margin-bottom:20px;">
+        <span style="display:inline-block;width:40px;height:3px;background:#0a7d00;border-radius:3px;"></span>
+        <p class="eyebrow" style="margin-top:10px;"><i class="fa fa-info-circle"></i> Detalle de actividad</p>
+    </div>
+    <h1>
+        {{ actividad.title }}
+        <span id="estadoSpan" class="status-badge"></span>
+    </h1>
+    <p class="subtitle"><i class="fa fa-tag"></i> {{ actividad.category }} • <i class="fa fa-calendar"></i> {{ actividad.day | capitalize }}</p>
+
+    <div class="grid">
+        <div class="card">
+            <div class="block">
+                <p class="eyebrow"><i class="fa fa-microphone"></i> Ponente principal</p>
+                <div class="box" style="font-size:18px; font-weight:bold;">{{ actividad.speaker or "Por confirmar" }}</div>
+            </div>
+            <div class="row">
+                <div>
+                    <p class="eyebrow"><i class="fa fa-clock"></i> Horario</p>
+                    <div class="icon-box">
+                        <div class="icon"><i class="fa fa-hourglass-start"></i></div>
+                        <span>{{ actividad.start_time }} - {{ actividad.end_time or "Por definir" }}</span>
+                    </div>
+                </div>
+                <div>
+                    <p class="eyebrow"><i class="fa fa-location-dot"></i> Ubicación</p>
+                    <div class="icon-box">
+                        <div class="icon"><i class="fa fa-building"></i></div>
+                        <span>{{ actividad.venue or "Por definir" }}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="block">
+                <p class="eyebrow" style="margin-bottom:15px;"><i class="fa fa-id-card"></i> Perfil del ponente</p>
+                <div class="row">
+                    <div class="icon-box"><div class="icon"><i class="fa fa-graduation-cap"></i></div><span><strong>Carrera:</strong> {{ actividad.career or "No especificado" }}</span></div>
+                    <div class="icon-box"><div class="icon"><i class="fa fa-building"></i></div><span><strong>Institución:</strong> {{ actividad.institution or "No especificado" }}</span></div>
+                </div>
+                <div class="row">
+                    <div class="icon-box"><div class="icon"><i class="fa fa-award"></i></div><span><strong>Grado académico:</strong> {{ actividad.academic_degree or "No especificado" }}</span></div>
+                    <div class="icon-box"><div class="icon"><i class="fa fa-brain"></i></div><span><strong>Especialidad:</strong> {{ actividad.specialty or "No especificado" }}</span></div>
+                </div>
+                <div class="icon-box" style="margin-bottom:12px;"><div class="icon"><i class="fa fa-briefcase"></i></div><span><strong>Experiencia:</strong> {{ actividad.experience or "No especificado" }}</span></div>
+                {% if actividad.speaker_email %}
+                <div class="icon-box" style="margin-bottom:12px;"><div class="icon"><i class="fa fa-envelope"></i></div><span><strong>Email:</strong> <a href="mailto:{{ actividad.speaker_email }}" class="social-link">{{ actividad.speaker_email }}</a></span></div>
+                {% endif %}
+                {% if actividad.speaker_phone %}
+                <div class="icon-box" style="margin-bottom:12px;"><div class="icon"><i class="fa fa-phone"></i></div><span><strong>Teléfono:</strong> <a href="tel:{{ actividad.speaker_phone }}" class="social-link">{{ actividad.speaker_phone }}</a></span></div>
+                {% endif %}
+                {% if actividad.social %}
+                <div class="icon-box"><div class="icon"><i class="fa fa-globe"></i></div><span><strong>Red social:</strong> <a href="{{ actividad.social }}" target="_blank" class="social-link">{{ actividad.social }}</a></span></div>
+                {% endif %}
+            </div>
+            <div class="block">
+                <p class="eyebrow"><i class="fa fa-user-astronaut"></i> Biografía</p>
+                <div class="box" style="min-height:100px; line-height:1.6;">{{ actividad.bio or "Sin biografía disponible." }}</div>
+            </div>
+            <div class="block">
+                <p class="eyebrow"><i class="fa fa-file-alt"></i> Descripción de la actividad</p>
+                <div class="box" style="min-height:120px; line-height:1.6;">{{ actividad.description or "Sin descripción disponible." }}</div>
+            </div>
+        </div>
+        <div>
+            <div class="card">
+                <p class="eyebrow" style="margin-bottom:15px;"><i class="fa fa-calendar-alt"></i> Información rápida</p>
+                <div class="side-box"><p class="eyebrow"><i class="fa fa-calendar-day"></i> Día</p><strong>{{ actividad.day | capitalize }}</strong></div>
+                <div class="side-box"><p class="eyebrow"><i class="fa fa-clock"></i> Duración</p><strong>{% if actividad.start_time and actividad.end_time %}{{ actividad.start_time }} - {{ actividad.end_time }}{% else %}Por definir{% endif %}</strong></div>
+                <div class="side-box"><p class="eyebrow"><i class="fa fa-ticket"></i> Categoría</p><strong>{{ actividad.category }}</strong></div>
+            </div>
+            <div class="card">
+                <p class="eyebrow" style="margin-bottom:10px;"><i class="fa fa-image"></i> Imagen destacada</p>
+                <div class="img-container">
+                    {% if actividad.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + actividad.image) }}" class="img" alt="{{ actividad.title }}">
+                    {% else %}
+                        <img src="{{ url_for('static', filename='img/imagen2.png') }}" class="img" alt="Imagen por defecto">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card">
+                <p class="eyebrow" style="margin-bottom:15px;"><i class="fa fa-cog"></i> Acciones</p>
+                <button onclick="window.history.back()" class="btn btn-secondary" style="margin-bottom:10px;"><i class="fa fa-arrow-left"></i> Regresar</button>
+                <!-- Botón para estudiantes: guardar/quitar de agenda (ahora con llamada al servidor) -->
+                {% if current_user.is_authenticated and current_user.role and current_user.role.name == 'estudiante' %}
+                    <button id="toggleAgendaBtn" class="btn btn-primary"><i class="fas fa-spinner fa-pulse"></i> Cargando...</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmación profesional (reemplaza el confirm nativo) -->
+<div class="modal fade modal-confirm" id="confirmModal" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmModalTitle">Confirmar acción</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="confirmModalMessage">
+                ¿Estás seguro de que quieres quitar esta actividad de tu agenda?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel-modal" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn-confirm-modal" id="confirmModalOkBtn">Aceptar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==================== ESTADO DE LA ACTIVIDAD ====================
+    function actualizarEstado() {
+        const fecha = "{{ actividad.date }}";
+        const hora = "{{ actividad.start_time }}";
+        const span = document.getElementById('estadoSpan');
+        if (!fecha || !hora) {
+            span.textContent = 'Desconocido';
+            span.classList.add('status-finished');
+            return;
+        }
+        try {
+            const ahora = new Date();
+            const fechaHoraEvento = new Date(`${fecha}T${hora}`);
+            const activo = fechaHoraEvento > ahora;
+            span.textContent = activo ? 'Activo' : 'Finalizado';
+            span.classList.add(activo ? 'status-active' : 'status-finished');
+        } catch(e) {
+            span.textContent = 'Error';
+            span.classList.add('status-finished');
+        }
+    }
+
+    // ==================== MODAL DE CONFIRMACIÓN PROFESIONAL ====================
+    let pendingAction = null;
+    function confirmAction(message, title = 'Confirmar acción', onConfirm) {
+        const modalEl = document.getElementById('confirmModal');
+        if (!modalEl) {
+            // fallback por si no existe el modal
+            if (confirm(message)) onConfirm();
+            return;
+        }
+        const modal = new bootstrap.Modal(modalEl);
+        document.getElementById('confirmModalTitle').innerText = title;
+        document.getElementById('confirmModalMessage').innerHTML = message;
+        // Remover event listener previo para evitar duplicados
+        const okBtn = document.getElementById('confirmModalOkBtn');
+        const newOkBtn = okBtn.cloneNode(true);
+        okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+        newOkBtn.addEventListener('click', () => {
+            modal.hide();
+            if (onConfirm) onConfirm();
+        });
+        modal.show();
+    }
+
+    // ==================== AGENDA CON SERVIDOR (API) ====================
+    let isStudent = {% if current_user.is_authenticated and current_user.role and current_user.role.name == 'estudiante' %}true{% else %}false{% endif %};
+    const actividadId = {{ actividad.id }};
+    const toggleBtn = document.getElementById('toggleAgendaBtn');
+    let currentSavedState = false;
+
+    // Función para mostrar mensajes (usa el toast global si existe)
+    function mostrarMensaje(mensaje, tipo = 'success') {
+        if (typeof window.showToast === 'function') {
+            window.showToast(mensaje, tipo);
+        } else {
+            alert(mensaje);
+        }
+    }
+
+    // Actualizar el texto y estilo del botón según el estado actual
+    function updateButtonUI(saved) {
+        if (!toggleBtn) return;
+        currentSavedState = saved;
+        if (saved) {
+            toggleBtn.innerHTML = '<i class="fas fa-trash-alt"></i> Quitar de agenda';
+            toggleBtn.classList.add('btn-primary');
+            toggleBtn.classList.remove('btn-secondary');
+        } else {
+            toggleBtn.innerHTML = '<i class="fas fa-heart"></i> Me interesa';
+            toggleBtn.classList.add('btn-primary');
+            toggleBtn.classList.remove('btn-secondary');
+        }
+    }
+
+    // Cargar el estado actual desde el servidor
+    async function loadAgendaStatus() {
+        if (!isStudent || !toggleBtn) return;
+        try {
+            const response = await fetch('/agenda/api/agenda');
+            if (!response.ok) throw new Error('Error al cargar agenda');
+            const data = await response.json();
+            const savedIds = data.saved_ids || [];
+            const isSaved = savedIds.includes(actividadId);
+            updateButtonUI(isSaved);
+        } catch (error) {
+            console.error('Error al obtener estado de agenda:', error);
+            toggleBtn.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Error';
+            toggleBtn.disabled = true;
+        }
+    }
+
+    // Alternar estado (guardar / quitar)
+    async function toggleAgenda() {
+        if (!isStudent) {
+            mostrarMensaje('Debes iniciar sesión como estudiante para usar la agenda', 'warning');
+            return;
+        }
+
+        // Si actualmente está guardada, mostramos el modal de confirmación antes de quitar
+        if (currentSavedState) {
+            confirmAction(
+                '¿Estás seguro de que quieres quitar esta actividad de tu agenda?',
+                'Quitar de agenda',
+                async () => {
+                    await ejecutarToggle();
+                }
+            );
+        } else {
+            await ejecutarToggle();
+        }
+    }
+
+    async function ejecutarToggle() {
+        // Deshabilitar botón temporalmente para evitar múltiples clics
+        toggleBtn.disabled = true;
+        const originalHtml = toggleBtn.innerHTML;
+        toggleBtn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Procesando...';
+
+        try {
+            const response = await fetch('/agenda/api/agenda/toggle', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actividad_id: actividadId })
+            });
+            const data = await response.json();
+            if (response.ok) {
+                const newSavedState = data.saved;
+                updateButtonUI(newSavedState);
+                mostrarMensaje(data.message, newSavedState ? 'success' : 'warning');
+            } else {
+                mostrarMensaje(data.error || 'Error al procesar la solicitud', 'error');
+                // Restaurar el estado visual previo (no cambiar UI)
+                updateButtonUI(currentSavedState);
+            }
+        } catch (error) {
+            console.error('Error en toggleAgenda:', error);
+            mostrarMensaje('Error de conexión. Intenta de nuevo.', 'error');
+            updateButtonUI(currentSavedState);
+        } finally {
+            toggleBtn.disabled = false;
+        }
+    }
+
+    // Asignar evento al botón si el usuario es estudiante
+    if (isStudent && toggleBtn) {
+        toggleBtn.addEventListener('click', toggleAgenda);
+        // Cargar estado inicial
+        loadAgendaStatus();
+    } else if (toggleBtn) {
+        toggleBtn.style.display = 'none';
+    }
+
+    // Inicializar estado de actividad (activo/finalizado)
+    document.addEventListener('DOMContentLoaded', actualizarEstado);
+</script>
+{% endblock %}

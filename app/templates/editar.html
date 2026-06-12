@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Actividad - Jornada 2025</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            background: #f4f7f5;
+            color: #222;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        .header {
+            margin-bottom: 30px;
+        }
+
+        .header p {
+            color: #0a7d00;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            font-size: 14px;
+        }
+
+        .header h1 {
+            font-size: 38px;
+            color: #111;
+            margin-bottom: 10px;
+        }
+
+        .form-box {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #ddd;
+            border-radius: 14px;
+            background: #fafafa;
+            font-size: 1rem;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #0a7d00;
+            box-shadow: 0 0 0 2px rgba(10,125,0,0.2);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+
+        .actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 10px;
+        }
+
+        .btn {
+            padding: 15px;
+            border: none;
+            border-radius: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-save {
+            background: #0a7d00;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background: #006800;
+            transform: translateY(-2px);
+        }
+
+        .btn-cancel {
+            background: #ddd;
+            color: #333;
+        }
+
+        .btn-cancel:hover {
+            background: #ccc;
+        }
+
+        img {
+            max-width: 200px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
+
+        .info-note {
+            background: #e8f5e9;
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #166534;
+            margin: 10px 0;
+        }
+
+        .readonly-field {
+            background: #eef2f3;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fdecea;
+            color: #c62828;
+            border: 1px solid #f5c6cb;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .text-muted {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .day-preview {
+            background: #f0fdf4;
+            border: 1px solid #c8e6c9;
+            border-radius: 14px;
+            padding: 8px 12px;
+            margin-top: 6px;
+            font-size: 13px;
+            color: #166534;
+        }
+
+        @media (max-width: 768px) {
+            .grid-2, .grid-3, .actions {
+                grid-template-columns: 1fr;
+            }
+            body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <p>Administración</p>
+        <h1>✏️ Editar actividad</h1>
+    </div>
+
+    <div class="form-box">
+        <div id="formErrors" class="error-message"></div>
+
+        <form method="POST" action="{{ url_for('admin.editar', id=actividad.id) }}" enctype="multipart/form-data" id="editForm">
+            <!-- Nombre -->
+            <div class="form-group">
+                <label>Nombre de la actividad *</label>
+                <input type="text" name="title" value="{{ actividad.title }}" required>
+            </div>
+
+            <!-- Tipo de evento -->
+            <div class="form-group">
+                <label>Tipo de evento *</label>
+                <select name="event_type" id="event_type" required>
+                    <option value="jornada" {% if actividad.event_type == 'jornada' %}selected{% endif %}>
+                        📅 Jornada Académica (cálculo automático de número)
+                    </option>
+                    <option value="extra" {% if actividad.event_type == 'extra' %}selected{% endif %}>
+                        🎓 Evento extracurricular / Permanente
+                    </option>
+                </select>
+            </div>
+
+            <!-- Día y Categoría -->
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Día *</label>
+                    <select name="day" id="daySelect" required>
+                        <option value="Lunes">Lunes</option>
+                        <option value="Martes">Martes</option>
+                        <option value="Miércoles">Miércoles</option>
+                        <option value="Jueves">Jueves</option>
+                        <option value="Viernes">Viernes</option>
+                    </select>
+                    <div id="dayPreview" class="day-preview" style="display:none;">
+                        <i class="fas fa-calendar-day"></i> Día calculado: <strong id="diaCalculado"></strong>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Categoría *</label>
+                    <select id="categoryType" class="form-control" required>
+                        <option value="">Seleccionar categoría</option>
+                        <option value="Inauguración">Inauguración</option>
+                        <option value="Término">Término</option>
+                        <option value="Conferencias académicas">Conferencias académicas</option>
+                        <option value="Proyecciones y narrativas">Proyecciones y narrativas</option>
+                        <option value="Expresiones artísticas">Expresiones artísticas</option>
+                        <option value="Talleres prácticos">Talleres prácticos</option>
+                        <option value="Eventos tecnológicos">Eventos tecnológicos</option>
+                        <option value="Concursos y dinámicas estudiantiles">Concursos y dinámicas estudiantiles</option>
+                        <option value="Exposiciones y muestras de proyectos">Exposiciones y muestras de proyectos</option>
+                        <option value="Actividades de vinculación y networking">Actividades de vinculación y networking</option>
+                        <option value="Mesas redondas y paneles de discusión">Mesas redondas y paneles de discusión</option>
+                        <option value="otro">✏️ Otro (especificar)</option>
+                    </select>
+                    <div id="categoriaOtroGroup" style="display:none; margin-top:10px;">
+                        <input type="text" id="categoriaOtroInput" class="form-control" placeholder="Escriba la categoría">
+                    </div>
+                    <input type="hidden" name="category" id="categoriaFinal">
+                </div>
+            </div>
+
+            <!-- Fecha y Horarios -->
+            <div class="grid-3">
+                <div class="form-group">
+                    <label>Fecha *</label>
+                    <input type="date" name="date" id="fecha" value="{{ actividad.date }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Hora inicio *</label>
+                    <input type="time" name="start_time" id="startTime" value="{{ actividad.start_time }}" required>
+                    <small class="text-muted">Formato 24h, entre 08:00 y 18:00</small>
+                </div>
+                <div class="form-group">
+                    <label>Hora fin *</label>
+                    <input type="time" name="end_time" id="endTime" value="{{ actividad.end_time }}" required>
+                    <small class="text-muted">Duración mínima 10 minutos</small>
+                </div>
+            </div>
+
+            <!-- Número de jornada (solo lectura) -->
+            <div class="form-group">
+                <label>Número de jornada (solo para eventos tipo Jornada)</label>
+                <input type="text" id="jornada_numero" class="readonly-field" 
+                       value="{% if actividad.jornada_numero %}{{ actividad.jornada_numero }}va Jornada ({{ actividad.date[:4] }}){% else %}No aplica{% endif %}" 
+                       readonly>
+                <small class="info-note" id="jornada_info">
+                    {% if actividad.event_type == 'jornada' and actividad.date %}
+                        Se calculará automáticamente según el año de la fecha.
+                    {% else %}
+                        Selecciona "Jornada Académica" y una fecha para calcular automáticamente.
+                    {% endif %}
+                </small>
+            </div>
+
+            <!-- Ponente -->
+            <div class="form-group">
+                <label>Ponente *</label>
+                <input type="text" name="speaker" value="{{ actividad.speaker }}" required>
+            </div>
+
+            <!-- Dirigido a (Carrera/Área) -->
+            <div class="form-group">
+                <label>Dirigido a (Carrera / Área) *</label>
+                <select id="dirigidoType" class="form-control" required>
+                    <option value="">Seleccionar</option>
+                    <option value="Ingeniería en Sistemas Computacionales">Ingeniería en Sistemas Computacionales</option>
+                    <option value="Ingeniería en Innovación Agrícola Sustentable">Ingeniería en Innovación Agrícola Sustentable</option>
+                    <option value="Licenciatura en Contaduría">Licenciatura en Contaduría</option>
+                    <option value="Público en general">Público en general</option>
+                    <option value="otro">✏️ Otro (especificar)</option>
+                </select>
+                <div id="dirigidoOtroGroup" style="display:none; margin-top:10px;">
+                    <input type="text" id="dirigidoOtroInput" class="form-control" placeholder="Escriba la carrera o área">
+                </div>
+                <input type="hidden" name="career" id="dirigidoFinal">
+            </div>
+
+            <!-- Institución -->
+            <div class="form-group">
+                <input type="text" name="institution" value="{{ actividad.institution }}" placeholder="Institución">
+            </div>
+
+            <!-- Contacto -->
+            <div class="grid-2">
+                <input type="email" name="speaker_email" value="{{ actividad.speaker_email }}" placeholder="Correo">
+                <input type="text" name="speaker_phone" value="{{ actividad.speaker_phone }}" placeholder="Teléfono">
+            </div>
+            <div class="grid-2">
+                <input type="text" name="academic_degree" value="{{ actividad.academic_degree }}" placeholder="Grado académico">
+                <input type="text" name="specialty" value="{{ actividad.specialty }}" placeholder="Especialidad">
+            </div>
+            <div class="form-group">
+                <input type="text" name="experience" value="{{ actividad.experience }}" placeholder="Experiencia profesional">
+            </div>
+            <div class="form-group">
+                <input type="text" name="social" value="{{ actividad.social }}" placeholder="Redes sociales / sitio web">
+            </div>
+            <div class="form-group">
+                <textarea name="bio" rows="3" placeholder="Biografía del ponente">{{ actividad.bio }}</textarea>
+            </div>
+
+            <!-- SEDE INTELIGENTE -->
+            <div class="form-group">
+                <label>Sede / Auditorio *</label>
+                <select id="venueType" class="form-control" required>
+                    <option value="">Seleccionar tipo de sede</option>
+                    <option value="Aula Magna">📚 Aula Magna</option>
+                    <option value="Salón de Conferencias">🏛️ Salón de Conferencias</option>
+                    <option value="Plazoleta Institucional">🏟️ Plazoleta Institucional</option>
+                    <option value="Sala de Cómputo">💻 Sala de Cómputo</option>
+                    <option value="aula_clase">🏫 Aula de clase (inteligente)</option>
+                    <option value="otro">✏️ Otro (especificar)</option>
+                </select>
+            </div>
+
+            <div id="aulaClaseGroup" style="display:none;" class="form-group">
+                <label>Seleccionar aula según periodo</label>
+                <select id="aulaClaseSelect" class="form-control">
+                    <option value="">-- Seleccione un aula --</option>
+                </select>
+                <small class="text-muted">Las aulas se actualizan automáticamente según el periodo académico de la fecha.</small>
+            </div>
+
+            <div id="otroGroup" style="display:none;" class="form-group">
+                <label>Especificar sede</label>
+                <input type="text" id="otroInput" class="form-control" placeholder="Ej. Biblioteca Central, Gimnasio, etc.">
+            </div>
+
+            <input type="hidden" name="venue" id="venueFinal" value="">
+
+            <!-- Descripción -->
+            <div class="form-group">
+                <textarea name="description" rows="5" placeholder="Descripción de la actividad">{{ actividad.description }}</textarea>
+            </div>
+
+            <!-- Imagen del ponente -->
+            <div class="form-group">
+                <label>Imagen actual del ponente</label>
+                {% if actividad.image %}
+                    <img src="{{ url_for('static', filename='uploads/' + actividad.image) }}" style="max-width: 200px;">
+                {% else %}
+                    <p>Sin imagen</p>
+                {% endif %}
+                <input type="file" name="imagen" accept="image/jpeg,image/png,image/gif">
+            </div>
+
+            <!-- ========== NUEVO: LOGO INSTITUCIONAL ========== -->
+            <div class="form-group">
+                <label>Logo institucional (opcional)</label>
+                {% if actividad.logo_institucion %}
+                    <div>
+                        <img src="{{ url_for('static', filename='uploads/' + actividad.logo_institucion) }}" style="max-width: 150px; margin-bottom: 10px;">
+                        <p class="text-muted">Logo actual</p>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No hay logo actualmente.</p>
+                {% endif %}
+                <input type="file" name="logo_institucion" id="logoInstitucion" accept="image/jpeg,image/png,image/gif">
+                <small class="text-muted">Dejar vacío para mantener el actual. Subir uno nuevo reemplazará al anterior.</small>
+                <div id="previewLogoContainer" style="margin-top: 10px; display: none;">
+                    <img id="previewLogoImg" style="max-width: 150px; border-radius: 8px;">
+                    <p class="text-muted">Vista previa del nuevo logo</p>
+                </div>
+            </div>
+
+            <!-- Botones -->
+            <div class="actions">
+                <button type="submit" class="btn btn-save">💾 Actualizar actividad</button>
+                <button type="button" onclick="window.location.href='{{ url_for('admin.dashboard') }}'" class="btn btn-cancel">
+                    ❌ Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // ==================== PREVISUALIZACIÓN DEL LOGO ====================
+    const logoInput = document.getElementById('logoInstitucion');
+    const previewContainer = document.getElementById('previewLogoContainer');
+    const previewImg = document.getElementById('previewLogoImg');
+
+    if (logoInput) {
+        logoInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    previewImg.src = ev.target.result;
+                    previewContainer.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                previewContainer.style.display = 'none';
+                previewImg.src = '';
+            }
+        });
+    }
+
+    // ==================== CORRECCIÓN UTC: FIJAR LA HORA AL MEDIODÍA ====================
+    function fechaConHoraFija(fechaStr) {
+        if (!fechaStr) return new Date();
+        return new Date(fechaStr + 'T12:00:00');
+    }
+
+    // ==================== CALCULAR DÍA DE LA SEMANA ====================
+    function calcularDiaSemana(fechaString) {
+        const diasMap = {
+            'Monday': 'Lunes', 'Tuesday': 'Martes', 'Wednesday': 'Miércoles',
+            'Thursday': 'Jueves', 'Friday': 'Viernes', 'Saturday': 'Sábado', 'Sunday': 'Domingo'
+        };
+        if (!fechaString) return '';
+        const fecha = fechaConHoraFija(fechaString);
+        const diaIngles = fecha.toLocaleDateString('en-US', { weekday: 'long' });
+        return diasMap[diaIngles] || '';
+    }
+
+    // ==================== ACTUALIZAR DÍA EN EL SELECT AUTOMÁTICAMENTE ====================
+    const fechaInput = document.getElementById('fecha');
+    const daySelect = document.getElementById('daySelect');
+    const dayPreviewDiv = document.getElementById('dayPreview');
+    const diaCalculadoSpan = document.getElementById('diaCalculado');
+
+    function actualizarDiaPorFecha() {
+        const fecha = fechaInput.value;
+        if (fecha) {
+            const diaCalculado = calcularDiaSemana(fecha);
+            if (diaCalculado) {
+                for (let i = 0; i < daySelect.options.length; i++) {
+                    if (daySelect.options[i].value === diaCalculado) {
+                        daySelect.selectedIndex = i;
+                        break;
+                    }
+                }
+                diaCalculadoSpan.innerText = diaCalculado;
+                dayPreviewDiv.style.display = 'block';
+            } else {
+                dayPreviewDiv.style.display = 'none';
+            }
+        } else {
+            dayPreviewDiv.style.display = 'none';
+        }
+    }
+
+    if (fechaInput) {
+        fechaInput.addEventListener('change', actualizarDiaPorFecha);
+        actualizarDiaPorFecha();
+    }
+
+    // ==================== DATOS DE GRUPOS POR PERIODO (sedes) ====================
+    const gruposPeriodo1 = [
+        "13SC111", "13AG111", "13LC111",
+        "13SC131", "13AG131", "13LC131",
+        "13SC151", "13AG151", "13LC151",
+        "13SC171", "13AG171", "13LC171"
+    ];
+    const gruposPeriodo2 = [
+        "13SC121", "13AG121", "13LC121",
+        "13SC141", "13AG141", "13LC141",
+        "13SC161", "13AG161", "13LC161",
+        "13SC181", "13AG181", "13LC181"
+    ];
+
+    function getPeriodoPorFecha(fechaStr) {
+        if (!fechaStr) return 1;
+        const fecha = fechaConHoraFija(fechaStr);
+        const mes = fecha.getMonth() + 1;
+        return (mes >= 9 || mes <= 2) ? 1 : 2;
+    }
+
+    function getAulasPorPeriodo(periodo) {
+        return periodo === 1 ? [...gruposPeriodo1] : [...gruposPeriodo2];
+    }
+
+    function actualizarAulasSegunFecha() {
+        const fecha = document.getElementById('fecha').value;
+        const periodo = getPeriodoPorFecha(fecha);
+        const aulas = getAulasPorPeriodo(periodo);
+        const select = document.getElementById('aulaClaseSelect');
+        select.innerHTML = '<option value="">-- Seleccione un aula --</option>';
+        aulas.forEach(aula => {
+            const option = document.createElement('option');
+            option.value = aula;
+            option.textContent = aula;
+            select.appendChild(option);
+        });
+    }
+
+    // ==================== SEDE INTELIGENTE ====================
+    const venueActual = "{{ actividad.venue }}";
+    const venueTypeSelect = document.getElementById('venueType');
+    const aulaClaseGroup = document.getElementById('aulaClaseGroup');
+    const otroGroup = document.getElementById('otroGroup');
+    const aulaClaseSelect = document.getElementById('aulaClaseSelect');
+    const otroInput = document.getElementById('otroInput');
+    const venueFinal = document.getElementById('venueFinal');
+
+    function determinarTipoSede(valor) {
+        const opcionesFijas = ['Aula Magna', 'Salón de Conferencias', 'Plazoleta Institucional', 'Sala de Cómputo'];
+        if (opcionesFijas.includes(valor)) return valor;
+        if (gruposPeriodo1.includes(valor) || gruposPeriodo2.includes(valor)) return 'aula_clase';
+        if (valor && valor !== '') return 'otro';
+        return '';
+    }
+
+    function actualizarCamposSede() {
+        aulaClaseGroup.style.display = 'none';
+        otroGroup.style.display = 'none';
+        aulaClaseSelect.removeAttribute('required');
+        otroInput.removeAttribute('required');
+        
+        const selected = venueTypeSelect.value;
+        if (selected === 'aula_clase') {
+            aulaClaseGroup.style.display = 'block';
+            aulaClaseSelect.setAttribute('required', 'required');
+            actualizarAulasSegunFecha();
+        } else if (selected === 'otro') {
+            otroGroup.style.display = 'block';
+            otroInput.setAttribute('required', 'required');
+        }
+    }
+
+    const tipoInicial = determinarTipoSede(venueActual);
+    if (tipoInicial === 'aula_clase') {
+        venueTypeSelect.value = 'aula_clase';
+        actualizarCamposSede();
+        setTimeout(() => {
+            if (venueActual && (gruposPeriodo1.includes(venueActual) || gruposPeriodo2.includes(venueActual))) {
+                aulaClaseSelect.value = venueActual;
+            }
+        }, 100);
+    } else if (tipoInicial === 'otro') {
+        venueTypeSelect.value = 'otro';
+        actualizarCamposSede();
+        otroInput.value = venueActual;
+    } else if (tipoInicial !== '') {
+        venueTypeSelect.value = tipoInicial;
+        actualizarCamposSede();
+    }
+
+    venueTypeSelect.addEventListener('change', function() {
+        actualizarCamposSede();
+        if (this.value === 'aula_clase') actualizarAulasSegunFecha();
+    });
+    document.getElementById('fecha').addEventListener('change', function() {
+        if (venueTypeSelect.value === 'aula_clase') actualizarAulasSegunFecha();
+    });
+
+    // ==================== CATEGORÍA (con "Otro") ====================
+    const categoryType = document.getElementById('categoryType');
+    const categoriaOtroGroup = document.getElementById('categoriaOtroGroup');
+    const categoriaOtroInput = document.getElementById('categoriaOtroInput');
+    const categoriaFinal = document.getElementById('categoriaFinal');
+    const categoriaActual = "{{ actividad.category }}";
+
+    function initCategoria() {
+        const categoriasPredefinidas = [
+            "Inauguración", "Término", "Conferencias académicas", "Proyecciones y narrativas",
+            "Expresiones artísticas", "Talleres prácticos", "Eventos tecnológicos",
+            "Concursos y dinámicas estudiantiles", "Exposiciones y muestras de proyectos",
+            "Actividades de vinculación y networking", "Mesas redondas y paneles de discusión"
+        ];
+        if (categoriasPredefinidas.includes(categoriaActual)) {
+            categoryType.value = categoriaActual;
+            categoriaOtroGroup.style.display = 'none';
+            categoriaFinal.value = categoriaActual;
+        } else if (categoriaActual && categoriaActual !== '') {
+            categoryType.value = 'otro';
+            categoriaOtroGroup.style.display = 'block';
+            categoriaOtroInput.value = categoriaActual;
+            categoriaFinal.value = categoriaActual;
+        } else {
+            categoryType.value = '';
+            categoriaOtroGroup.style.display = 'none';
+            categoriaFinal.value = '';
+        }
+    }
+
+    categoryType.addEventListener('change', function() {
+        if (this.value === 'otro') {
+            categoriaOtroGroup.style.display = 'block';
+            categoriaOtroInput.setAttribute('required', 'required');
+            categoriaFinal.value = '';
+        } else {
+            categoriaOtroGroup.style.display = 'none';
+            categoriaOtroInput.removeAttribute('required');
+            categoriaFinal.value = this.value;
+        }
+    });
+
+    categoriaOtroInput.addEventListener('input', function() {
+        categoriaFinal.value = this.value;
+    });
+    initCategoria();
+
+    // ==================== DIRIGIDO A ====================
+    const dirigidoType = document.getElementById('dirigidoType');
+    const dirigidoOtroGroup = document.getElementById('dirigidoOtroGroup');
+    const dirigidoOtroInput = document.getElementById('dirigidoOtroInput');
+    const dirigidoFinal = document.getElementById('dirigidoFinal');
+    const dirigidoActual = "{{ actividad.career }}";
+
+    function initDirigido() {
+        const opcionesPredefinidas = [
+            "Ingeniería en Sistemas Computacionales",
+            "Ingeniería en Innovación Agrícola Sustentable",
+            "Licenciatura en Contaduría",
+            "Público en general"
+        ];
+        if (opcionesPredefinidas.includes(dirigidoActual)) {
+            dirigidoType.value = dirigidoActual;
+            dirigidoOtroGroup.style.display = 'none';
+            dirigidoFinal.value = dirigidoActual;
+        } else if (dirigidoActual && dirigidoActual !== '') {
+            dirigidoType.value = 'otro';
+            dirigidoOtroGroup.style.display = 'block';
+            dirigidoOtroInput.value = dirigidoActual;
+            dirigidoFinal.value = dirigidoActual;
+        } else {
+            dirigidoType.value = '';
+            dirigidoOtroGroup.style.display = 'none';
+            dirigidoFinal.value = '';
+        }
+    }
+
+    dirigidoType.addEventListener('change', function() {
+        if (this.value === 'otro') {
+            dirigidoOtroGroup.style.display = 'block';
+            dirigidoOtroInput.setAttribute('required', 'required');
+            dirigidoFinal.value = '';
+        } else {
+            dirigidoOtroGroup.style.display = 'none';
+            dirigidoOtroInput.removeAttribute('required');
+            dirigidoFinal.value = this.value;
+        }
+    });
+
+    dirigidoOtroInput.addEventListener('input', function() {
+        dirigidoFinal.value = this.value;
+    });
+    initDirigido();
+
+    // ==================== VALIDACIONES Y ENVÍO ====================
+    const form = document.getElementById('editForm');
+    const startTimeInput = document.getElementById('startTime');
+    const endTimeInput = document.getElementById('endTime');
+    const errorDiv = document.getElementById('formErrors');
+
+    function mostrarError(mensaje) {
+        errorDiv.innerHTML = mensaje;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
+    }
+
+    function validarHorarioCliente() {
+        const start = startTimeInput.value;
+        const end = endTimeInput.value;
+        if (!start || !end) {
+            mostrarError('❌ Debe especificar hora de inicio y fin.');
+            return false;
+        }
+        function toMinutes(t) {
+            const [h, m] = t.split(':').map(Number);
+            return h * 60 + m;
+        }
+        const startMin = toMinutes(start);
+        const endMin = toMinutes(end);
+        const minPermitido = 8 * 60;
+        const maxPermitido = 18 * 60;
+        if (startMin < minPermitido || endMin > maxPermitido) {
+            mostrarError('⏰ El horario debe estar entre 08:00 y 18:00 horas.');
+            return false;
+        }
+        if (startMin >= endMin) {
+            mostrarError('⏰ La hora de inicio debe ser anterior a la hora de fin.');
+            return false;
+        }
+        if (endMin - startMin < 10) {
+            mostrarError('⏱️ La duración mínima es 10 minutos.');
+            return false;
+        }
+        return true;
+    }
+
+    form.addEventListener('submit', function(e) {
+        if (!validarHorarioCliente()) {
+            e.preventDefault();
+            return;
+        }
+        if (!categoriaFinal.value) {
+            e.preventDefault();
+            mostrarError('📌 Debe seleccionar una categoría o especificarla en "Otro".');
+            return;
+        }
+        if (!dirigidoFinal.value) {
+            e.preventDefault();
+            mostrarError('🎯 Debe seleccionar a quién va dirigida la actividad o especificarlo en "Otro".');
+            return;
+        }
+        const selectedType = venueTypeSelect.value;
+        let sedeValor = '';
+        if (selectedType === 'aula_clase') {
+            if (!aulaClaseSelect.value) {
+                e.preventDefault();
+                mostrarError('🏫 Debe seleccionar un aula de clase.');
+                return;
+            }
+            sedeValor = aulaClaseSelect.value;
+        } else if (selectedType === 'otro') {
+            if (!otroInput.value.trim()) {
+                e.preventDefault();
+                mostrarError('✏️ Debe especificar la sede.');
+                return;
+            }
+            sedeValor = otroInput.value.trim();
+        } else if (selectedType && selectedType !== '') {
+            sedeValor = selectedType;
+        } else {
+            e.preventDefault();
+            mostrarError('📍 Seleccione un tipo de sede.');
+            return;
+        }
+        venueFinal.value = sedeValor;
+        aulaClaseSelect.disabled = true;
+        otroInput.disabled = true;
+
+        const title = document.querySelector('input[name="title"]').value.trim();
+        const speaker = document.querySelector('input[name="speaker"]').value.trim();
+        const fecha = document.getElementById('fecha').value;
+        if (!title || !speaker || !fecha) {
+            e.preventDefault();
+            mostrarError('Complete los campos obligatorios: Nombre, Ponente y Fecha.');
+        }
+    });
+
+    // ==================== NÚMERO DE JORNADA ====================
+    const eventTypeSelect = document.getElementById('event_type');
+    const fechaJornadaInput = document.getElementById('fecha');
+    const jornadaNumeroInput = document.getElementById('jornada_numero');
+    const jornadaInfo = document.getElementById('jornada_info');
+
+    function calcularNumeroJornada(year) { return year - 2013; }
+
+    function actualizarNumeroJornada() {
+        const tipo = eventTypeSelect.value;
+        const fecha = fechaJornadaInput.value;
+        if (tipo === 'jornada' && fecha) {
+            const año = fechaConHoraFija(fecha).getFullYear();
+            const numero = calcularNumeroJornada(año);
+            jornadaNumeroInput.value = `${numero}va Jornada (${año})`;
+            jornadaInfo.innerHTML = `✅ Se guardará como <strong>${numero}va Jornada</strong> (año ${año}).`;
+            jornadaInfo.style.background = '#f0fdf4';
+        } else if (tipo === 'extra') {
+            jornadaNumeroInput.value = 'No aplica (evento extracurricular)';
+            jornadaInfo.innerHTML = 'Los eventos extracurriculares no tienen número de jornada.';
+            jornadaInfo.style.background = '#fff3e0';
+        } else {
+            jornadaNumeroInput.value = 'Selecciona una fecha y tipo para calcular.';
+            jornadaInfo.innerHTML = 'Selecciona "Jornada Académica" y una fecha para calcular.';
+            jornadaInfo.style.background = '#e8f5e9';
+        }
+    }
+
+    eventTypeSelect.addEventListener('change', actualizarNumeroJornada);
+    fechaJornadaInput.addEventListener('change', actualizarNumeroJornada);
+    actualizarNumeroJornada();
+</script>
+
+</body>
+</html>

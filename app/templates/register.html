@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Registro de Estudiante - Jornada 2025{% endblock %}
+
+{% block extra_css %}
+<style>
+.register-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px 20px;
+}
+.card-register {
+    border-radius: 24px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+.card-header {
+    background: #008000;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+.card-header h2 {
+    margin: 0;
+    font-size: 1.6rem;
+}
+.card-body {
+    padding: 30px;
+}
+.form-group {
+    margin-bottom: 20px;
+}
+.form-group label {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 8px;
+    display: block;
+}
+.form-group input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    font-size: 1rem;
+    transition: 0.2s;
+}
+.form-group input:focus {
+    border-color: #008000;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0,128,0,0.1);
+}
+.btn-register {
+    background: #008000;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 1rem;
+    width: 100%;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.btn-register:hover {
+    background: #006600;
+    transform: translateY(-2px);
+}
+.btn-secondary {
+    background: #64748b;
+    margin-top: 10px;
+}
+.info-text {
+    background: #f0fdf4;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #166534;
+    margin-bottom: 20px;
+    text-align: center;
+}
+.error-message {
+    background: #fdecea;
+    color: #c62828;
+    border: 1px solid #f5c6cb;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    display: none;
+    font-weight: 500;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="register-container">
+    <div class="card card-register">
+        <div class="card-header">
+            <h2><i class="fas fa-user-graduate"></i> Registro de Estudiante</h2>
+            <p>Forma parte de la Jornada Académica 2025</p>
+        </div>
+        <div class="card-body">
+            <!-- Contenedor de errores dinámico -->
+            <div id="formErrors" class="error-message"></div>
+
+            <!-- Paso 1: Formulario de datos personales -->
+            <div id="step1">
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-id-card"></i> Matrícula *</label>
+                        <input type="text" id="student_id" name="student_id" class="form-control" placeholder="Ej. 13220064" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-user"></i> Nombre completo *</label>
+                        <input type="text" id="full_name" name="full_name" class="form-control" placeholder="Nombre completo" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-envelope"></i> Correo electrónico *</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="correo@ejemplo.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-phone"></i> Teléfono (opcional)</label>
+                        <input type="tel" id="phone" name="phone" class="form-control" placeholder="+521234567890">
+                        <small class="text-muted">Formato internacional recomendado (ej. +521234567890)</small>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-lock"></i> Contraseña *</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Mínimo 6 caracteres" required>
+                    </div>
+                    <div class="form-group">
+                        <label><i class="fas fa-check-circle"></i> Confirmar contraseña *</label>
+                        <input type="password" id="confirm_password" name="confirm_password" class="form-control" placeholder="Repite la contraseña" required>
+                    </div>
+                    <button type="button" class="btn-register" id="sendCodeBtn">
+                        <i class="fas fa-paper-plane"></i> Enviar código de verificación
+                    </button>
+                </form>
+            </div>
+
+            <!-- Paso 2: Verificación por código (inicialmente oculto) -->
+            <div id="step2" style="display: none;">
+                <div class="info-text">
+                    <i class="fas fa-info-circle"></i> Hemos enviado un código de 6 dígitos a tu correo electrónico.
+                </div>
+                <form id="verifyForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-key"></i> Código de verificación</label>
+                        <input type="text" id="verification_code" name="code" class="form-control" placeholder="000000" required maxlength="6">
+                    </div>
+                    <button type="button" class="btn-register" id="verifyCodeBtn">
+                        <i class="fas fa-check-circle"></i> Verificar y completar registro
+                    </button>
+                    <button type="button" class="btn-register btn-secondary" id="backToStep1Btn">
+                        <i class="fas fa-arrow-left"></i> Volver atrás
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Función para mostrar errores (usa el mismo div que en nuevo.html)
+function mostrarError(mensaje) {
+    const errorDiv = document.getElementById('formErrors');
+    errorDiv.innerHTML = mensaje;
+    errorDiv.style.display = 'block';
+    errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setTimeout(() => {
+        errorDiv.style.display = 'none';
+    }, 8000);
+}
+
+// Validar formato de teléfono (internacional, opcional)
+function validarTelefono(telefono) {
+    if (!telefono) return true;
+    // Permite: + seguido de 10 a 15 dígitos, o solo dígitos de 10 a 15
+    const regex = /^(\+?[0-9]{10,15})$/;
+    return regex.test(telefono);
+}
+
+// Enviar código (Paso 1)
+document.getElementById('sendCodeBtn').addEventListener('click', async function() {
+    // Limpiar error previo
+    document.getElementById('formErrors').style.display = 'none';
+    
+    const student_id = document.getElementById('student_id').value.trim();
+    const full_name = document.getElementById('full_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
+    const password = document.getElementById('password').value;
+    const confirm = document.getElementById('confirm_password').value;
+
+    // Validaciones específicas
+    if (!student_id) {
+        mostrarError('❌ El campo "Matrícula" es obligatorio.');
+        return;
+    }
+    if (!full_name) {
+        mostrarError('❌ El campo "Nombre completo" es obligatorio.');
+        return;
+    }
+    if (!email) {
+        mostrarError('❌ El campo "Correo electrónico" es obligatorio.');
+        return;
+    }
+    // Validar formato de email (adicional a HTML5)
+    if (!email.match(/^[^\s@]+@([^\s@.,]+\.)+[^\s@.,]{2,}$/)) {
+        mostrarError('📧 El correo electrónico no tiene un formato válido (ejemplo: nombre@dominio.com).');
+        return;
+    }
+    if (!password) {
+        mostrarError('🔒 El campo "Contraseña" es obligatorio.');
+        return;
+    }
+    if (password !== confirm) {
+        mostrarError('🔒 Las contraseñas no coinciden.');
+        return;
+    }
+    if (password.length < 6) {
+        mostrarError('🔒 La contraseña debe tener al menos 6 caracteres.');
+        return;
+    }
+    if (phone && !validarTelefono(phone)) {
+        mostrarError('📱 El formato del teléfono no es válido. Usa solo números o empieza con + (ej. +521234567890).');
+        return;
+    }
+
+    // Deshabilitar botón y mostrar spinner
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Enviando...';
+
+    // Construir FormData
+    const formData = new URLSearchParams();
+    formData.append('student_id', student_id);
+    formData.append('full_name', full_name);
+    formData.append('email', email);
+    formData.append('phone', phone);
+    formData.append('password', password);
+    formData.append('confirm_password', confirm);
+    formData.append('verification_method', 'email');   // Siempre email
+
+    try {
+        const response = await fetch("{{ url_for('auth.register_send_code') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            // Éxito: usar toast del sistema (definido en base.html)
+            if (typeof showToast === 'function') {
+                showToast(data.message || 'Código enviado correctamente', 'success');
+            } else {
+                alert(data.message || 'Código enviado correctamente');
+            }
+            // Cambiar al paso 2
+            document.getElementById('step1').style.display = 'none';
+            document.getElementById('step2').style.display = 'block';
+            document.getElementById('verification_code').focus();
+        } else {
+            mostrarError(data.error || 'Error al enviar el código. Verifica tus datos.');
+        }
+    } catch (error) {
+        mostrarError('❌ Error de conexión. Intenta de nuevo más tarde.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar código de verificación';
+    }
+});
+
+// Verificar código (Paso 2)
+document.getElementById('verifyCodeBtn').addEventListener('click', async function() {
+    const code = document.getElementById('verification_code').value.trim();
+    if (!code || code.length !== 6) {
+        mostrarError('🔑 El código de verificación debe tener exactamente 6 dígitos.');
+        return;
+    }
+
+    const btn = this;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Verificando...';
+
+    const formData = new URLSearchParams();
+    formData.append('code', code);
+
+    try {
+        const response = await fetch("{{ url_for('auth.register_verify') }}", {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        });
+        const data = await response.json();
+        if (response.ok && data.success) {
+            if (typeof showToast === 'function') {
+                showToast(data.message || 'Registro exitoso. Ahora puedes iniciar sesión.', 'success');
+            } else {
+                alert(data.message || 'Registro exitoso. Ahora puedes iniciar sesión.');
+            }
+            setTimeout(() => {
+                window.location.href = "{{ url_for('auth.login') }}";
+            }, 2000);
+        } else {
+            mostrarError(data.error || 'Código inválido o expirado. Solicita uno nuevo.');
+        }
+    } catch (error) {
+        mostrarError('❌ Error de conexión. Verifica tu conexión a internet.');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-circle"></i> Verificar y completar registro';
+    }
+});
+
+// Volver al paso 1
+document.getElementById('backToStep1Btn').addEventListener('click', function() {
+    document.getElementById('step2').style.display = 'none';
+    document.getElementById('step1').style.display = 'block';
+    document.getElementById('verification_code').value = '';
+    // Limpiar errores
+    document.getElementById('formErrors').style.display = 'none';
+});
+</script>
+{% endblock %}
